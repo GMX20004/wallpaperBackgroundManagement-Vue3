@@ -3,18 +3,30 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     name: 'pageLayout',
-    component: () => import('@/views/pageLayout/index.vue'),
+    component: () => import('@/views/index.vue'),
     children: [
       {
         path: '/homePage',
         name: 'homePage',
         component: () => import('@/views/homePage/index.vue'),
+        meta: { keepAlive: true}
+      },
+      {
+        path: '/user',
+        name: 'user',
+        component: () => import('@/views/user/index.vue'),
         meta: { keepAlive: true }
       },
       {
-        path: '/AboutView',
-        name: 'AboutView',
-        component: () => import('@/views/AboutView.vue'),
+        path: '/message',
+        name: 'message',
+        component: () => import('@/views/message/index.vue'),
+        meta: { keepAlive: true }
+      },
+      {
+        path: '/wallpaper',
+        name: 'wallpaper',
+        component: () => import('@/views/wallpaper/index.vue'),
         meta: { keepAlive: true }
       }
     ]

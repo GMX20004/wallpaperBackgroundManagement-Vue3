@@ -1,13 +1,15 @@
 <template>
   <div id="app">
-    <keep-alive>
-      <router-view class="content" v-if="$route.meta.keepAlive" />
-    </keep-alive>
-    <router-view v-if="!$route.meta.keepAlive"></router-view>
+    <perfect-scrollbar>
+      <keep-alive>
+        <router-view class="content" v-if="$route.meta.keepAlive" />
+      </keep-alive>
+      <router-view v-if="!$route.meta.keepAlive"></router-view>
+    </perfect-scrollbar>
   </div>
 </template>
 <script setup lang="ts">
-import { getCurrentInstance,provide } from "vue";
+import { getCurrentInstance, provide} from "vue";
 const { proxy } = getCurrentInstance() as any;
 provide('proxy',proxy);
 </script>
@@ -20,5 +22,8 @@ provide('proxy',proxy);
   height: 100%;
   width: 100%;
   position: absolute;
+  .ps{
+    height: 100%;
+  }
 }
 </style>

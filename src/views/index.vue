@@ -1,5 +1,5 @@
 <template>
-  <div class="background">
+  <div class="background" :style="{width:width+'px',height:height+'px'}">
     <div class="system">
       <span class="menu">
         <div style="width: 100%;margin-top: 100%;">
@@ -36,19 +36,30 @@
       </span>
       <span class="window">
         <div class="accordingWindow">
-          <router-view />
+          <el-config-provider :locale="language===1?en:zhCn">
+            <router-view />
+          </el-config-provider>
         </div>
       </span>
     </div>
   </div>
 </template>
 <script setup lang="ts">
-import { inject, ref } from "vue";
+import {provide, readonly, ref } from "vue";
 import { useRouter } from "vue-router";
+import zhCn from "element-plus/lib/locale/lang/zh-cn"
+import en from 'element-plus/lib/locale/lang/en';
+/**
+ * 变量区
+ */
 const router = useRouter();
-let proxy = inject("proxy");
-const { $cookies } = proxy as any;
 let options = ref(0);
+let width = ref<number>(window.innerWidth);
+let height = ref<number>(window.innerHeight);
+let language = ref(1);
+/**
+ * 方法区
+ */
 const Click = (val:number) => {
   options.value = val;
   switch (val){
@@ -58,18 +69,18 @@ const Click = (val:number) => {
       });
       break;
     case 1:
-      // router.push({
-      //   'path': '/AboutView'
-      // });
+      router.push({
+        'path': '/user'
+      });
       break;
     case 2:
       router.push({
-        'path': '/'
+        'path': '/message'
       });
       break;
     case 3:
       router.push({
-        'path': '/'
+        'path': '/wallpaper'
       });
       break;
     case 4:
@@ -79,20 +90,31 @@ const Click = (val:number) => {
       break;
   }
 }
-$cookies.set('cs',11111);
+/**
+ * 全局变量
+ */
+provide('language',readonly(language));
+provide('modifyLanguage', (val:number) => {
+  language.value = val;
+});
+/**
+ * 监视浏览器分辨率变化
+ */
+window.onresize = function(){
+  width.value = window.innerWidth;
+  height.value = window.innerHeight;
+}
 </script>
 
 <style scoped lang="scss">
 .background{
-  width: 100%;
-  height: 100%;
   background-color: #dddfeb;
   overflow: hidden;
   display: inline-block;
   position: absolute;
   .system{
-    margin: 5% 0 0 15%;
-    width: 70%;
+    margin: 5% 0 0 10%;
+    width: 80%;
     height: 80%;
     background-color: #eff2f7;
     border-radius: 50px;
