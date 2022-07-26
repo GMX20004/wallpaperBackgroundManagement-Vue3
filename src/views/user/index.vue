@@ -43,7 +43,6 @@
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
-
           </div>
           <div style="width: 96%;margin: 20px 0 0 2%;text-align: center;height: 100px">
              <el-avatar style="width: 100px;height: 100px;" :src="headPortrait+userList[userIsFocus]['headPortrait']"/>

@@ -4,14 +4,22 @@
       <keep-alive>
         <router-view class="content" v-if="$route.meta.keepAlive" />
       </keep-alive>
-      <router-view v-if="!$route.meta.keepAlive"></router-view>
+      <router-view v-if="!$route.meta.keepAlive || isRouterActive"></router-view>
     </perfect-scrollbar>
   </div>
 </template>
 <script setup lang="ts">
-import { getCurrentInstance, provide} from "vue";
+import { getCurrentInstance, nextTick, provide, ref } from "vue";
 const { proxy } = getCurrentInstance() as any;
+const isRouterActive = ref(true);
 provide('proxy',proxy);
+
+provide('reload', () => {
+  isRouterActive.value = false
+  nextTick(() => {
+    isRouterActive.value = true
+  })
+})
 </script>
 <style lang="less">
 #app {

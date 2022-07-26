@@ -270,12 +270,6 @@ const init = () => {
   calendar.value.push({English: [today,monthEnglishFormat[m],weekEnglishFormat[wk]],Chinese: [today,monthChineseFormat[m],weekChineseFormat[wk]]});
   calendar.value.push({English: [tomorrow,monthEnglishFormat[tomorrow==='01'?m+1:m],weekEnglishFormat[wk+1>6?0:wk+1]],Chinese: [tomorrow,monthChineseFormat[tomorrow==='01'?m+1:m],weekChineseFormat[wk+1>6?0:wk+1]]});
   calendar.value.push({English: [afterTomorrow,monthEnglishFormat[afterTomorrow==='01'?m+1:m],weekEnglishFormat[wk+1>6?1:wk+2>6?0:wk+2]],Chinese: [afterTomorrow,monthChineseFormat[afterTomorrow==='01'?m+1:m],weekChineseFormat[wk+1>6?1:wk+2>6?0:wk+2]]});
-  $http.get('/L/number').then((res: any)=>{
-    number.value = res.data[0];
-    data.option.series[0].data[0].value = number.value.wallpaperNumber;
-    data.option.series[0].data[1].value = number.value.testWallpaperNumber;
-    wallpaperChart();
-  });
 }
 init();
 const handleCommand = (command: number) => {
@@ -292,8 +286,14 @@ const calendarClick = (num:number) => {
 const wallpaperChart = () => {
   myCharts.value = $echarts.init(document.getElementById('chart'));
   myCharts.value.clear();
-  myCharts.value.setOption(data.option,true);
+  $http.get('/L/number').then((res: any)=>{
+    number.value = res.data[0];
+    data.option.series[0].data[0]['value'] = number.value.wallpaperNumber;
+    data.option.series[0].data[1]['value'] = number.value.testWallpaperNumber;
+    myCharts.value.setOption(data.option);
+  });
 }
+
 onMounted(()=>{
   wallpaperChart();
 });

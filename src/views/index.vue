@@ -1,6 +1,6 @@
 <template>
   <div class="background" :style="{width:width+'px',height:height+'px'}">
-    <div class="system">
+    <div v-if="isLogTo" class="system">
       <span class="menu">
         <div style="width: 100%;margin-top: 100%;">
           <div class="menu-button" @click="Click(0)" :class="options===0?'color-black':''">
@@ -42,21 +42,87 @@
         </div>
       </span>
     </div>
+    <div v-else class="system" style="background-image: url('http://101.43.88.137/image/system/LoginInterface.jpg')">
+      <span class="logTo-background">
+      </span>
+      <span class="logTo-interface">
+        <div class="logTo-title"><b>{{language===1?'LogIn':'登录'}}</b></div>
+        <el-form
+          style="width: 96%;margin: 50px 0 0 2%;height: 50%"
+          ref="ruleFormRef"
+          :model="logIn"
+          :rules="rules"
+          label-width="80px">
+          <el-form-item :label="language===1?'Account:':'账号:'" prop="account">
+            <el-input v-model="logIn.account" :placeholder="language===1?'Please input Account':'请输入账号'" clearable></el-input>
+          </el-form-item>
+          <el-form-item :label="language===1?'Password:':'密码:'" prop="password">
+            <el-input v-model="logIn.password" type="password" :placeholder="language===1?'Please input Password':'请输入密码'" show-password></el-input>
+          </el-form-item>
+          <el-form-item>
+            <span style="width: 100%;display: flex">
+              <el-image fit="scale-down" :src="logIn.yzmImg" style="cursor: pointer;height: 100%" @click="yzmQuery"></el-image>
+              <el-input style="margin-left: 20px;width: 100px;" maxlength="4" v-model="logIn.yzmText"  @keydown.enter="submit(ruleFormRef)" :placeholder="language===1?'Please input':'请输入'" clearable></el-input>
+            </span>
+          </el-form-item>
+        </el-form>
+        <el-button  style="width: 90%;margin: 20px 0 0 5%" type="primary" @click="submit(ruleFormRef)">{{language===1?'LogIn':'登录'}}</el-button>
+      </span>
+    </div>
   </div>
 </template>
 <script setup lang="ts">
-import {provide, readonly, ref } from "vue";
+import { inject, onMounted, provide, reactive, readonly, ref } from "vue";
 import { useRouter } from "vue-router";
 import zhCn from "element-plus/lib/locale/lang/zh-cn"
 import en from 'element-plus/lib/locale/lang/en';
+import { ElMessage, FormInstance, FormRules } from "element-plus";
+import Qs from "qs";
+/**
+ * 接口区
+ */
+interface logInInterface{
+  account: string,
+  password: string,
+  verificationCode: string,
+  yzmImg: any,
+  yzm: string,
+  yzmText: string
+}
 /**
  * 变量区
  */
+const proxy = inject("proxy");
+const { $http } = proxy as any;
+const { $cookies } = proxy as any;
 const router = useRouter();
 let options = ref(0);
-let width = ref<number>(window.innerWidth);
-let height = ref<number>(window.innerHeight);
+let width = ref<number>(window.innerWidth<1536?1536:window.innerWidth);
+let height = ref<number>(window.innerHeight<754?754:window.innerHeight);
 let language = ref(1);
+const uuid = ref<string>('');
+const isLogTo = ref<boolean>(false);
+const ruleFormRef = ref<FormInstance>();
+const logIn = reactive<logInInterface>({
+  account: '',
+  password: '',
+  verificationCode: '',
+  yzmImg: null,
+  yzm: '',
+  yzmText: ''
+});
+const validatePass = (rule: any, value: any, callback: any) => {
+  if (value === '') {
+    callback(new Error(language.value===1?'Please input':'请输入'))
+  } else {
+      if (!ruleFormRef.value) return;
+      callback()
+  }
+}
+const rules  = reactive<FormRules>({
+  account:{  validator: validatePass, trigger: 'blur' },
+  password:{  validator: validatePass, trigger: 'blur'}
+});
 /**
  * 方法区
  */
@@ -90,6 +156,59 @@ const Click = (val:number) => {
       break;
   }
 }
+const yzmQuery = () => {
+  $http.get('/L/yzm').then((res:any)=>{
+    logIn.yzmImg = 'data:image/png;base64,'+res.data['img'];
+    logIn.yzm = res.data['text'];
+    logIn.yzmText = '';
+  })
+}
+const submit = (formEl: FormInstance | undefined) => {
+  if (!formEl) return
+  formEl.validate((valid) => {
+    if (valid) {
+      if (logIn.yzmText.toLowerCase() !== logIn.yzm.toLowerCase()){
+        ElMessage({
+          message: language.value===1?'Verification code error, please enter again':'验证码错误,请重新输入',
+          type: 'warning',
+        });
+        yzmQuery();
+      }else{
+        $http.post('/admin/e4c984df9f364376992066fd393d89fe?'+Qs.stringify({
+          account: logIn.account,
+          password: logIn.password
+        })).then((res:any)=>{
+          if (res.data['exists']){
+            ElMessage({
+              message: language.value===1?'Login successful':'登录成功',
+              type: 'success',
+            });
+            uuid.value = res.data['uuid'];
+            isLogTo.value = true;
+            router.push({
+              'path': '/homePage'
+            });
+            $cookies.set('uuid',res.data['uuid'],{ expires: -1 });
+          }else{
+            ElMessage.error(language.value===1?'Account or password is incorrect':'帐号或密码错误')
+          }
+        });
+      }
+    } else {
+      return false
+    }
+  });
+
+}
+onMounted(()=>{
+  if ($cookies.get('uuid')!==null){
+    isLogTo.value = true;
+    router.push({
+      'path': '/homePage'
+    });
+  }
+  yzmQuery();
+})
 /**
  * 全局变量
  */
@@ -101,8 +220,18 @@ provide('modifyLanguage', (val:number) => {
  * 监视浏览器分辨率变化
  */
 window.onresize = function(){
-  width.value = window.innerWidth;
-  height.value = window.innerHeight;
+  if (window.innerWidth<1536){
+    width.value = 1536;
+  }else{
+    width.value = window.innerWidth;
+  }
+  if (window.innerHeight<754){
+    height.value = 754;
+  }else{
+    height.value = window.innerHeight;
+  }
+  router.go(0);
+  // reload();
 }
 </script>
 
@@ -119,6 +248,10 @@ window.onresize = function(){
     background-color: #eff2f7;
     border-radius: 50px;
     display: flex;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
     .menu{
       width: 150px;
       height: 100%;
@@ -147,6 +280,26 @@ window.onresize = function(){
       text-align: center;
       .menu-icon{
         margin-top: 10px;
+      }
+    }
+    .logTo-background{
+      width: calc(100% - 350px);
+      font-size: 100px;
+      color: white;
+      height: 100%;
+    }
+    .logTo-interface{
+      width: 300px;
+      height: 60%;
+      margin-top: 10%;
+      border-radius: 20px;
+      background-color: white;
+      .logTo-title{
+        width: 100%;
+        margin-top: 10px;
+        font-size: 40px;
+        text-align: center;
+        color: #2c95d4;
       }
     }
   }

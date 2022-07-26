@@ -15,6 +15,7 @@ module.exports = {
   rules: {
     "no-console": process.env.NODE_ENV === "production" ? "warn" : "off",
     "no-debugger": process.env.NODE_ENV === "production" ? "warn" : "off",
+    '@typescript-eslint/no-non-null-assertion': 'off',
     'no-multiple-empty-lines': 'warn', // 不允许有连续多行空行(关闭规则)
     "@typescript-eslint/no-explicit-any": ["off"], // 新增这句话，关闭any报错
     "vue/multi-word-component-names":"off",// 文件命名规则

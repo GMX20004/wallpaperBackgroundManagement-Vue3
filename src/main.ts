@@ -12,9 +12,8 @@ import '@/assets/imgs';
 import vue3SeamlessScroll from "vue3-seamless-scroll";
 import PerfectScrollbar from 'vue3-perfect-scrollbar';
 import 'vue3-perfect-scrollbar/dist/vue3-perfect-scrollbar.css';
-// import 'lib-flexible/flexible.js';
 axios.defaults.headers.common['token'] = '';
-axios.defaults.headers.post['Content-type'] = 'application/json';
+axios.defaults.headers.post['Content-type'] = 'application/x-www-form-urlencoded';
 axios.defaults.baseURL = 'http://101.43.88.137';
 const imgUrl = 'http://101.43.88.137/image/';
 // 路由拦截
