@@ -9,25 +9,31 @@ const routes: Array<RouteRecordRaw> = [
         path: '/homePage',
         name: 'homePage',
         component: () => import('@/views/homePage/index.vue'),
-        meta: { keepAlive: true}
+        meta: { keepAlive: true , requireAuth: true}
       },
       {
         path: '/user',
         name: 'user',
         component: () => import('@/views/user/index.vue'),
-        meta: { keepAlive: true }
+        meta: { keepAlive: true , requireAuth: true}
       },
       {
         path: '/message',
         name: 'message',
         component: () => import('@/views/message/index.vue'),
-        meta: { keepAlive: true }
+        meta: { keepAlive: true , requireAuth: true}
       },
       {
         path: '/wallpaper',
         name: 'wallpaper',
         component: () => import('@/views/wallpaper/index.vue'),
-        meta: { keepAlive: true }
+        meta: { keepAlive: true , requireAuth: true}
+      },
+      {
+        path: '/setUp',
+        name: 'setUp',
+        component: () => import('@/views/setUp/index.vue'),
+        meta: { keepAlive: true , requireAuth: true}
       }
     ]
   }

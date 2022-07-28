@@ -2,9 +2,8 @@
   <div id="app">
     <perfect-scrollbar>
       <keep-alive>
-        <router-view class="content" v-if="$route.meta.keepAlive" />
+        <router-view class="content" v-if="$route.meta.keepAlive || isRouterActive" />
       </keep-alive>
-      <router-view v-if="!$route.meta.keepAlive || isRouterActive"></router-view>
     </perfect-scrollbar>
   </div>
 </template>

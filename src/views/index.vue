@@ -37,7 +37,9 @@
       <span class="window">
         <div class="accordingWindow">
           <el-config-provider :locale="language===1?en:zhCn">
-            <router-view />
+            <keep-alive>
+              <router-view />
+            </keep-alive>
           </el-config-provider>
         </div>
       </span>
@@ -48,7 +50,7 @@
       <span class="logTo-interface">
         <div class="logTo-title"><b>{{language===1?'LogIn':'登录'}}</b></div>
         <el-form
-          style="width: 96%;margin: 50px 0 0 2%;height: 50%"
+          style="width: 96%;margin: 50px 0 0 2%;"
           ref="ruleFormRef"
           :model="logIn"
           :rules="rules"
@@ -67,6 +69,7 @@
           </el-form-item>
         </el-form>
         <el-button  style="width: 90%;margin: 20px 0 0 5%" type="primary" @click="submit(ruleFormRef)">{{language===1?'LogIn':'登录'}}</el-button>
+        <div style="width: 96%;margin:10px 0 0 2%;text-align: right"><span style="color: #2c95d4;cursor: pointer" @click="visitorsLogin">{{language===1?'Visitors to login':'游客登录'}}</span></div>
       </span>
     </div>
   </div>
@@ -100,6 +103,7 @@ let options = ref(0);
 let width = ref<number>(window.innerWidth<1536?1536:window.innerWidth);
 let height = ref<number>(window.innerHeight<754?754:window.innerHeight);
 let language = ref(1);
+const userInformation = ref<any>({});
 const uuid = ref<string>('');
 const isLogTo = ref<boolean>(false);
 const ruleFormRef = ref<FormInstance>();
@@ -151,7 +155,7 @@ const Click = (val:number) => {
       break;
     case 4:
       router.push({
-        'path': '/'
+        'path': '/setUp'
       });
       break;
   }
@@ -184,11 +188,18 @@ const submit = (formEl: FormInstance | undefined) => {
               type: 'success',
             });
             uuid.value = res.data['uuid'];
-            isLogTo.value = true;
-            router.push({
-              'path': '/homePage'
+            $http.post('/User/userUUID?'+Qs.stringify({
+              uuid: uuid.value
+            })).then((data:any)=>{
+              userInformation.value = data.data[0];
+              language.value = data.data[0]['language'];
+              $cookies.set('uuid',res.data['uuid'],{ expires: -1 });
+              isLogTo.value = true;
+              if (window.location.pathname == '/')
+                router.push({ 'path': '/homePage' });
+              else
+                router.push({ 'path': window.location.pathname });
             });
-            $cookies.set('uuid',res.data['uuid'],{ expires: -1 });
           }else{
             ElMessage.error(language.value===1?'Account or password is incorrect':'帐号或密码错误')
           }
@@ -198,10 +209,29 @@ const submit = (formEl: FormInstance | undefined) => {
       return false
     }
   });
-
+}
+const visitorsLogin = () =>{
+  $http.post('/User/userUUID?'+Qs.stringify({
+    uuid: '000000'
+  })).then((data:any)=>{
+    userInformation.value = data.data[0];
+    language.value = data.data[0]['language'];
+    $cookies.set('uuid','000000',{ expires: -1 });
+    isLogTo.value = true;
+    if (window.location.pathname == '/')
+      router.push({ 'path': '/homePage' });
+    else
+      router.push({ 'path': window.location.pathname });
+  });
 }
 onMounted(()=>{
   if ($cookies.get('uuid')!==null){
+    $http.post('/User/userUUID?'+Qs.stringify({
+      uuid: $cookies.get('uuid')
+    })).then((data:any)=>{
+      userInformation.value = data.data[0];
+      language.value = data.data[0]['language'];
+    });
     isLogTo.value = true;
     router.push({
       'path': '/homePage'
@@ -216,6 +246,10 @@ provide('language',readonly(language));
 provide('modifyLanguage', (val:number) => {
   language.value = val;
 });
+provide('modifyIsLogTo', (val:boolean) => {
+  isLogTo.value = val;
+});
+provide('userInformation',userInformation);
 /**
  * 监视浏览器分辨率变化
  */
@@ -290,7 +324,7 @@ window.onresize = function(){
     }
     .logTo-interface{
       width: 300px;
-      height: 60%;
+      height: 400px;
       margin-top: 10%;
       border-radius: 20px;
       background-color: white;

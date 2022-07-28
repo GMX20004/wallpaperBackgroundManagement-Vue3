@@ -20,8 +20,8 @@
               <path d="M192.032 631.402667V404.725333C192.032 228.330667 335.285333 85.333333 512 85.333333s319.968 142.997333 319.968 319.392v226.677334l60.608 121.013333c10.645333 21.237333-4.832 46.218667-28.618667 46.218667H160.042667c-23.786667 0-39.253333-24.981333-28.618667-46.218667l60.608-121.013333z m620.16 103.36l-40.842667-81.536a31.893333 31.893333 0 0 1-3.381333-14.282667V404.725333c0-141.12-114.602667-255.509333-255.968-255.509333S256.032 263.605333 256.032 404.725333V638.933333c0 4.96-1.162667 9.845333-3.381333 14.293334l-40.842667 81.525333h600.384z m-443.306667 152.32a31.893333 31.893333 0 0 1-4.149333-44.981334 32.032 32.032 0 0 1 45.056-4.138666A159.36 159.36 0 0 0 512 874.773333a159.36 159.36 0 0 0 102.186667-36.8 32.032 32.032 0 0 1 45.056 4.138667 31.893333 31.893333 0 0 1-4.16 44.981333A223.402667 223.402667 0 0 1 512 938.666667c-52.981333 0-103.2-18.453333-143.114667-51.594667z" p-id="3239"></path>
             </svg>
           </span>
-          <el-avatar style="width: 40px;height: 40px;margin-right: 10px" :src="headPortrait+'0.png'"></el-avatar>
-          <b>Hira R</b>
+          <el-avatar style="width: 40px;height: 40px;margin-right: 10px" :src="headPortrait+userInformation['headPortrait']"></el-avatar>
+          <b>{{userInformation['name']}}</b>
         </span>
       </div>
       <div class="body">
@@ -65,7 +65,7 @@
             <span style="display: flex">
               <span style="width: 50%;text-align: right;padding-right: 10px">{{language===1?time[1]:time[0]}}</span>
               <span style="width: 50%;">
-                <el-dropdown style="margin-top: 3px" trigger="click" @command="handleCommand">
+                <el-dropdown style="margin-top: 3px" trigger="click" @command="handleCommand2">
                   <el-button round style="background-color: black;color: white">
                     {{administratorList[adminIsFocus]['name']}}<el-icon class="el-icon--right"><arrow-down /></el-icon>
                   </el-button>
@@ -79,46 +79,19 @@
             </span>
           </div>
           <div class="body-left-hierarchy4">
-            <span style="width: 150px;background-color: #f3f6fb;border-radius: 30px">
-              <div style="width: 100%;height: 50px;text-align: center;padding-top: 10px">
-                <el-avatar style="width: 40px;height: 40px;" :src="headPortrait+administratorList[adminIsFocus]['headPortrait']"/>
-              </div>
-              <div style="width: 100%;height: 40px;text-align: center">
-                <b>{{administratorList[adminIsFocus]['name']}}</b>
-              </div>
-              <div style="width: 80%;text-align: center;color: #8d8d8d;margin-left: 10%">{{administratorList[adminIsFocus]['signature']}}</div>
-              <div style="width: 100%;height: 40px;text-align: center">
-                <el-button style="background-color: black;color: white" type="info" round>{{language===1?'Details':'详情'}}</el-button>
-              </div>
-            </span>
-            <span style="margin-left: 40px;width: auto;height: 100%;">
+            <span style="width: 100px;height: 100%;">
               <div class="calendar" :class="calendarChoose===1?'background-black':''" @click="calendarClick(1)"  >
-                <span class="calendar-span1">
-                  <b>{{language===1?calendar[0]['English'][0]:calendar[0]['Chinese'][0]}}</b>
-                </span>
-                <span class="calendar-span2">
-                  {{language===1?calendar[0]['English'][1]:calendar[0]['Chinese'][1]}}<br>{{language===1?calendar[0]['English'][2]:calendar[0]['Chinese'][2]}}
-                </span>
+                7{{language===1?' Day':' 天'}}
               </div>
               <div class="calendar" :class="calendarChoose===2?'background-black':''" @click="calendarClick(2)">
-                <span class="calendar-span1">
-                  <b>{{language===1?calendar[1]['English'][0]:calendar[1]['Chinese'][0]}}</b>
-                </span>
-                <span class="calendar-span2">
-                  {{language===1?calendar[1]['English'][1]:calendar[1]['Chinese'][1]}}<br>{{language===1?calendar[1]['English'][2]:calendar[1]['Chinese'][2]}}
-                </span>
+                12{{language===1?' Day':' 天'}}
               </div>
               <div class="calendar" :class="calendarChoose===3?'background-black':''" @click="calendarClick(3)">
-                <span class="calendar-span1">
-                  <b>{{language===1?calendar[2]['English'][0]:calendar[2]['Chinese'][0]}}</b>
-                </span>
-                <span class="calendar-span2">
-                  {{language===1?calendar[2]['English'][1]:calendar[2]['Chinese'][1]}}<br>{{language===1?calendar[2]['English'][2]:calendar[2]['Chinese'][2]}}
-                </span>
+                17{{language===1?' Day':' 天'}}
               </div>
             </span>
-            <span style="margin-left: 40px;width: 150px;height: 100%;line-height: 240px;text-align: center;color: #8d8d8d">
-              暂无安排
+            <span style="margin-left: 20px;width: calc(100% - 120px);height: 100%;text-align: center;">
+              <div ref="chart2" id="theLineChart" style="width: 100%;height: 100%;"></div>
             </span>
           </div>
         </span>
@@ -149,7 +122,7 @@
             </perfect-scrollbar>
           </div>
           <div class="body-right-hierarchy3">
-            <div ref="chart" id="chart" style="width: 100%;height: 150px;font-size: 10px"></div>
+            <div ref="chart" id="thePieChart" style="width: 100%;height: 150px;font-size: 10px"></div>
           </div>
           <div class="body-right-hierarchy4">
             <el-progress :percentage="((number.wallpaperNumber/(number.wallpaperNumber+number.testWallpaperNumber))*100).toFixed(2)" />
@@ -163,6 +136,7 @@
 
 <script setup lang="ts">
 import { ref, inject, reactive, onMounted } from "vue";
+import { ElMessage } from "element-plus";
 
 /**
  * 变量区
@@ -172,10 +146,13 @@ const proxy = inject("proxy");
 const { $imgUrl } = proxy as any;
 const { $http } = proxy as any;
 const { $echarts } = proxy as any;
+const { $cookies } = proxy as any;
 let search = ref('');
 const headPortrait = $imgUrl+'/headPortrait/';
 let language:any = inject('language');
 const modifyLanguage:any = inject('modifyLanguage');
+const modifyIsLogTo:any = inject('modifyIsLogTo');
+const userInformation:any = inject('userInformation');
 const date = new Date();
 const time = ref<any>([]);
 // 月份
@@ -200,8 +177,8 @@ const administratorList = ref<any>([
   {headPortrait:'0.png',name:'Hira R',sex:'男',time:'2022-07-07 10:40',mail:'1478588530@qq.com',isFocus: false,signature: '哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈'}
 ]);
 const arrange = ref<any>([{label: '2022-7-15',id: 0},{label: '2022-7-15',id: 1},{label: '2022-7-15',id: 2}]);
-const data = reactive({
-  option:{
+const data = reactive<any>({
+  option1:{
     color: [
       '#c23531',
       '#2f4554',
@@ -247,10 +224,27 @@ const data = reactive({
         ]
       }
     ]
+  },
+  option2:{
+    xAxis: {
+      type: 'category',
+      data: []
+    },
+    yAxis: {
+      type: 'value'
+    },
+    series: [
+      {
+        data: [],
+        type: 'line'
+      }
+    ]
   }
 });
 const myCharts = ref<any>();
+const myCharts2 = ref<any>();
 const number = ref<any>({userNumber:0,wallpaperNumber:0,testWallpaperNumber:0,feedbackNumber:0});
+const access = ref<any[]>([]);
 /**
  * 方法区
  */
@@ -273,7 +267,23 @@ const init = () => {
 }
 init();
 const handleCommand = (command: number) => {
-  modifyLanguage(command);
+  $http.get('/L/language',{
+    params:{
+      language: command,
+      uuid: $cookies.get('uuid')
+    }
+  }).then((res:any)=>{
+    if (res.data){
+      modifyLanguage(command);
+    }else{
+      ElMessage.error(language===1?'Failed. Please try again':'失败,请重新尝试');
+    }
+  });
+
+}
+const handleCommand2 = (command: number) => {
+  console.log(command);
+  console.log(userInformation.value,'userInformation');
 }
 const adminFocus = (val:number) => {
   administratorList.value[adminIsFocus.value]['isFocus'] = false;
@@ -282,20 +292,71 @@ const adminFocus = (val:number) => {
 }
 const calendarClick = (num:number) => {
   calendarChoose.value = num;
+  switch (num) {
+    case 1:
+      data.option2.xAxis.data = [];
+      data.option2.series[0].data = [];
+      for (let i =0;i<7;i++){
+        data.option2.xAxis.data.push(access.value[i]['dateTime']);
+        data.option2.series[0].data.push(access.value[i]['accessNumber']);
+      }
+      myCharts2.value.setOption(data.option2);
+      break;
+    case 2:
+      data.option2.xAxis.data = [];
+      data.option2.series[0].data = [];
+      for (let i =0;i<12;i++){
+        data.option2.xAxis.data.push(access.value[i]['dateTime']);
+        data.option2.series[0].data.push(access.value[i]['accessNumber']);
+      }
+      myCharts2.value.setOption(data.option2);
+      break;
+    case 3:
+      data.option2.xAxis.data = [];
+      data.option2.series[0].data = [];
+      for (let i =0;i<17;i++){
+        data.option2.xAxis.data.push(access.value[i]['dateTime']);
+        data.option2.series[0].data.push(access.value[i]['accessNumber']);
+      }
+      myCharts2.value.setOption(data.option2);
+      break;
+  }
 }
 const wallpaperChart = () => {
-  myCharts.value = $echarts.init(document.getElementById('chart'));
+  myCharts.value = $echarts.init(document.getElementById('thePieChart'));
   myCharts.value.clear();
   $http.get('/L/number').then((res: any)=>{
     number.value = res.data[0];
-    data.option.series[0].data[0]['value'] = number.value.wallpaperNumber;
-    data.option.series[0].data[1]['value'] = number.value.testWallpaperNumber;
-    myCharts.value.setOption(data.option);
+    data.option1.series[0].data[0]['value'] = number.value.wallpaperNumber;
+    data.option1.series[0].data[1]['value'] = number.value.testWallpaperNumber;
+    myCharts.value.setOption(data.option1);
   });
 }
-
+const obtainAccess = (day:number) => {
+  myCharts2.value = $echarts.init(document.getElementById('theLineChart'));
+  myCharts2.value.clear();
+  $http.get('/L/obtainAccess',{
+    params:{
+      limit: day
+    }
+  }).then((res:any)=>{
+    access.value = res.data.reverse();
+    data.option2.xAxis.data = [];
+    data.option2.series[0].data = [];
+    for (let i =0;i<7;i++){
+      data.option2.xAxis.data.push(access.value[i]['dateTime']);
+      data.option2.series[0].data.push(access.value[i]['accessNumber']);
+    }
+    myCharts2.value.setOption(data.option2);
+  });
+}
 onMounted(()=>{
-  wallpaperChart();
+  if ($cookies.get('uuid')===null){
+    modifyIsLogTo(false);
+  }else{
+    wallpaperChart();
+    obtainAccess(30);
+  }
 });
 </script>
 
@@ -388,10 +449,12 @@ onMounted(()=>{
           width: 150px;
           height: 70px;
           border-radius: 20px;
-          display: flex;
           border: 1px solid #dedede;
           cursor:pointer;
           margin-bottom: 10px;
+          line-height: 70px;
+          text-align: center;
+          font-size: 20px;
           .calendar-span1{
             width: 60px;
             height: 100%;

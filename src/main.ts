@@ -1,4 +1,4 @@
-import { createApp } from 'vue';
+import { createApp, inject } from "vue";
 import App from '@/App.vue';
 import router from '@/router';
 import store from '@/store';
@@ -7,30 +7,14 @@ import 'element-plus/dist/index.css';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 import axios from 'axios';
 import * as echarts from 'echarts';
-import VueCookies from 'vue-cookies'
+import VueCookies from 'vue-cookies';
 import '@/assets/imgs';
 import vue3SeamlessScroll from "vue3-seamless-scroll";
 import PerfectScrollbar from 'vue3-perfect-scrollbar';
 import 'vue3-perfect-scrollbar/dist/vue3-perfect-scrollbar.css';
-axios.defaults.headers.common['token'] = '';
-axios.defaults.headers.post['Content-type'] = 'application/x-www-form-urlencoded';
+axios.defaults.timeout = 5000;
 axios.defaults.baseURL = 'http://101.43.88.137';
 const imgUrl = 'http://101.43.88.137/image/';
-// 路由拦截
-// router.beforeEach((to,from,next)=>{
-//   const user = sessionStorage.getItem('user');
-//   if (to.meta.requireAuth){
-//     if (user){
-//       next();
-//     }else{
-//       next({
-//         path: '/'
-//       });
-//     }
-//   }else{
-//     next();
-//   }
-// });
 
 const app = createApp(App);
 app.use(vue3SeamlessScroll);

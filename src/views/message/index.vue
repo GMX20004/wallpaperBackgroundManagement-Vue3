@@ -195,7 +195,7 @@
         </div>
       </span>
     </perfect-scrollbar>
-    <el-dialog v-model="dialogVisible">
+    <el-dialog width="20%" v-model="dialogVisible">
       <el-image
         :src="dialogImageUrl"
         fit="scale-down"
@@ -249,7 +249,7 @@
 </template>
 
 <script setup lang="ts">
-import { inject, reactive, ref } from "vue";
+import { inject, onMounted, reactive, ref } from "vue";
 import { ElMessage } from "element-plus";
 /**
  * 接口区
@@ -267,6 +267,8 @@ const proxy = inject("proxy");
 let language:any = inject('language');
 const { $imgUrl } = proxy as any;
 const { $http } = proxy as any;
+const { $cookies } = proxy as any;
+const modifyIsLogTo:any = inject('modifyIsLogTo');
 const headPortrait = $imgUrl+'/headPortrait/';
 const messageType = ref<number>(1);
 const alignOptions = [{English:'left',Chinese:'左',value: 0},{English:'right',Chinese:'右',value: 1},{English:'center',Chinese:'居中',value: 2}];
@@ -342,9 +344,6 @@ const base64 = (file:any, callBack: (data: string | ArrayBuffer | null) => void)
     callBack(reader.result);
   }
 }
-// const Test = (val:any) =>{
-//   console.log(val);
-// }
 
 // 系统公告
 const handleCommand = (command: number, val: number) => {
@@ -426,7 +425,11 @@ const importantSend = () =>{
   }
 }
 // 用户消息
-
+onMounted(()=>{
+  if ($cookies.get('uuid')===null){
+    modifyIsLogTo(false);
+  }
+});
 </script>
 
 <style scoped lang="scss">
@@ -625,9 +628,6 @@ const importantSend = () =>{
   }
   .uncheck{
     background-color: #b1b4b9;
-  }
-  ::v-deep .el-dialog{
-    width: 400px;
   }
 }
 </style>
