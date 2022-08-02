@@ -59,16 +59,11 @@
           <el-icon><Plus /></el-icon>
         </el-upload>
         <div style="width: 80%;margin-left: 10%;text-align: center">
-          <el-button style="width: 80%;" type="success" @click="upload">{{language===1?'Upload':'上传'}}</el-button>
+          <el-button style="width: 80%;" type="success" @click="upload" :disabled="userPermissions && userPermissions['wallpaperUpload']===0">{{language===1?'Upload':'上传'}}</el-button>
         </div>
       </div>
     </div>
-    <el-dialog width="20%" v-model="batchUpload.dialogVisible">
-      <el-image
-        :src="batchUpload.dialogImageUrl"
-        fit="scale-down"
-      />
-    </el-dialog>
+    <el-image-viewer v-if="batchUpload.dialogVisible" @close="batchUpload.dialogVisible=false" :url-list="[batchUpload.dialogImageUrl]"/>
     <el-dialog v-model="dialog" v-loading="picture.loading" :before-close="exitReset" width="60%">
       <div class="dialog-body">
         <span class="dialog-body-left">
@@ -87,13 +82,13 @@
               label-width="120px"
               size="default">
               <el-form-item :label="language===1?'Title:':'标题:'" prop="title">
-                <el-input v-model="ruleForm.title"></el-input>
+                <el-input v-model="ruleForm.title" :disabled="(userPermissions['onlineWallpaperModifyTitle']===0 && Select===0) || (userPermissions['notOnlineWallpaperModifyTitle']===0 && Select===1)"></el-input>
               </el-form-item>
               <el-form-item :label="language===1?'Label:':'标签:'" prop="label">
                 <el-tag
                   v-for="tag in ruleForm.label"
                   :key="tag"
-                  closable
+                  :closable="(userPermissions['onlineWallpaperModifyLabel']===1 && Select===0) || (userPermissions['notOnlineWallpaperModifyLabel']===1 && Select===1)"
                   style="margin:0 10px 5px 0"
                   :disable-transitions="false"
                   @close="handleClose(tag)"
@@ -109,12 +104,12 @@
                   @keyup.enter="handleInputConfirm"
                   @blur="handleInputConfirm"
                 />
-                <el-button v-else style="width: 80px;" size="small" @click="showInput">
+                <el-button v-else style="width: 80px;" size="small" v-show="(userPermissions['onlineWallpaperModifyLabel']===1 && Select===0) || (userPermissions['notOnlineWallpaperModifyLabel']===1 && Select===1)" @click="showInput">
                   + New Tag
                 </el-button>
               </el-form-item>
               <el-form-item :label="language===1?'State:':'状态:'">
-                <el-select v-model="ruleForm.state">
+                <el-select v-model="ruleForm.state" :disabled="(userPermissions['onlineWallpaperModifyState']===0 && Select===0) || (userPermissions['notOnlineWallpaperModifyState']===0 && Select===1)">
                   <el-option
                     v-for="item in wallpaperState"
                     :key="item.val"
@@ -125,7 +120,7 @@
                 </el-select>
               </el-form-item>
               <el-form-item :label="language===1?'Storage location:':'存储位置:'">
-                <el-select v-model="ruleForm.storageLocation">
+                <el-select v-model="ruleForm.storageLocation" :disabled="(userPermissions['onlineWallpaperModifyLocation']===0 && Select===0) || (userPermissions['notOnlineWallpaperModifyLocation']===0 && Select===1)">
                   <el-option
                     v-for="item in folderType"
                     :key="item.id"
@@ -137,7 +132,7 @@
             </el-form>
             <div style="width: 100%;text-align: center">
               <el-button @click="cancel(ruleFormRef)">{{language===1?'Cancel':'取消'}}</el-button>
-              <el-button type="primary" :disabled="$cookies.get('uuid')=='000000' && Select===0" @click="submit(ruleFormRef)">{{language===1?'Save':'保存'}}</el-button>
+              <el-button type="primary" :disabled="(userPermissions['onlineWallpaperModify']===0 && Select===0) || (userPermissions['notOnlineWallpaperModify']===0 && Select===1)" @click="submit(ruleFormRef)">{{language===1?'Save':'保存'}}</el-button>
             </div>
           </perfect-scrollbar>
         </span>
@@ -187,6 +182,7 @@ const proxy = inject("proxy");
 const { $imgUrl } = proxy as any;
 const { $http } = proxy as any;
 const { $cookies } = proxy as any;
+const userPermissions:any = inject('userPermissions');
 let language:any = inject('language');
 const modifyIsLogTo:any = inject('modifyIsLogTo');
 let Select = ref<number>(0);

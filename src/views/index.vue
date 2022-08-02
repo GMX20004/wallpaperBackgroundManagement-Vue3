@@ -104,7 +104,6 @@ let width = ref<number>(window.innerWidth<1536?1536:window.innerWidth);
 let height = ref<number>(window.innerHeight<754?754:window.innerHeight);
 let language = ref(1);
 const userInformation = ref<any>({});
-const uuid = ref<string>('');
 const isLogTo = ref<boolean>(false);
 const ruleFormRef = ref<FormInstance>();
 const logIn = reactive<logInInterface>({
@@ -127,6 +126,7 @@ const rules  = reactive<FormRules>({
   account:{  validator: validatePass, trigger: 'blur' },
   password:{  validator: validatePass, trigger: 'blur'}
 });
+const userPermissions = ref<any>();
 /**
  * 方法区
  */
@@ -187,19 +187,8 @@ const submit = (formEl: FormInstance | undefined) => {
               message: language.value===1?'Login successful':'登录成功',
               type: 'success',
             });
-            uuid.value = res.data['uuid'];
-            $http.post('/User/userUUID?'+Qs.stringify({
-              uuid: uuid.value
-            })).then((data:any)=>{
-              userInformation.value = data.data[0];
-              language.value = data.data[0]['language'];
-              $cookies.set('uuid',res.data['uuid'],{ expires: -1 });
-              isLogTo.value = true;
-              if (window.location.pathname == '/')
-                router.push({ 'path': '/homePage' });
-              else
-                router.push({ 'path': window.location.pathname });
-            });
+            $cookies.set('uuid',res.data['uuid'],{ expires: -1 });
+            userInformationQuery();
           }else{
             ElMessage.error(language.value===1?'Account or password is incorrect':'帐号或密码错误')
           }
@@ -211,31 +200,52 @@ const submit = (formEl: FormInstance | undefined) => {
   });
 }
 const visitorsLogin = () =>{
-  $http.post('/User/userUUID?'+Qs.stringify({
-    uuid: '000000'
-  })).then((data:any)=>{
+  $cookies.set('uuid','000000',{ expires: -1 });
+  userInformationQuery();
+}
+const userInformationQuery = () => {
+  $http.post('/User/userUUID',{
+    uuid: $cookies.get('uuid')
+  }).then((data:any)=>{
     userInformation.value = data.data[0];
     language.value = data.data[0]['language'];
-    $cookies.set('uuid','000000',{ expires: -1 });
+    gainPermissions();
     isLogTo.value = true;
-    if (window.location.pathname == '/')
+    if (window.location.pathname == '/'){
       router.push({ 'path': '/homePage' });
-    else
+      options.value = 0;
+    } else{
       router.push({ 'path': window.location.pathname });
+      switch (window.location.pathname){
+        case '/user':
+          options.value = 1;
+          break;
+        case '/message':
+          options.value = 2;
+          break;
+        case '/wallpaper':
+          options.value = 3;
+          break;
+        case '/setUp':
+          options.value = 4;
+          break;
+      }
+    }
   });
+}
+const gainPermissions = () => {
+  $http.get('/admin/PermissionsView',{
+    params:{
+      uuid:$cookies.get('uuid')
+    }
+  }).then((res:any)=>{
+    userPermissions.value = res.data[0];
+  })
 }
 onMounted(()=>{
   if ($cookies.get('uuid')!==null){
-    $http.post('/User/userUUID?'+Qs.stringify({
-      uuid: $cookies.get('uuid')
-    })).then((data:any)=>{
-      userInformation.value = data.data[0];
-      language.value = data.data[0]['language'];
-    });
-    isLogTo.value = true;
-    router.push({
-      'path': '/homePage'
-    });
+    userInformationQuery();
+    gainPermissions();
   }
   yzmQuery();
 })
@@ -250,6 +260,7 @@ provide('modifyIsLogTo', (val:boolean) => {
   isLogTo.value = val;
 });
 provide('userInformation',userInformation);
+provide('userPermissions',userPermissions);
 /**
  * 监视浏览器分辨率变化
  */

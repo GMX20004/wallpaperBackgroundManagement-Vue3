@@ -8,6 +8,7 @@
 
 <script setup lang="ts">
 import { inject, onMounted } from "vue";
+import router from "@/router";
 
 /**
  * 变量区
@@ -23,6 +24,9 @@ const modifyIsLogTo:any = inject('modifyIsLogTo');
 const exitClick = () => {
   $cookies.remove('uuid');
   modifyIsLogTo(false);
+  router.push({
+    'path': '/'
+  });
 }
 /**
  * 初始化

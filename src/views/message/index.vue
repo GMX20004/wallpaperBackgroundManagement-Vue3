@@ -3,154 +3,161 @@
     <perfect-scrollbar style="display: flex">
       <span class="body-left">
         <div class="body-left-upper">
-          <el-avatar style="width: 100px;height: 100px;" :src="headPortrait+user['headPortrait']"/>
-          <div style="margin-top: 10px"><b>{{user['name']}}</b></div>
+          <el-avatar style="width: 100px;height: 100px;" :src="headPortrait+userInformation['headPortrait']"/>
+          <div style="margin-top: 10px"><b>{{userInformation['name']}}</b></div>
         </div>
         <div class="body-left-lower">
           <perfect-scrollbar>
-            <div class="body-left-list" :class="messageType===1?'pitch-on':'uncheck'" @click="choose(1)">系统公告</div>
-            <div class="body-left-list" :class="messageType===2?'pitch-on':'uncheck'" @click="choose(2)">重要通知</div>
-<!--            <div class="body-left-userMessage" :class="messageType===3?'pitch-on':'uncheck'">-->
-<!--              <div class="body-left-userMessage-txt" @click="dropDown = !dropDown,choose(3)">-->
-<!--                <svg style="margin-top: 10px" :class="dropDown?'rotating1':'rotating2'" t="1658201440980" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2517" width="20" height="20">-->
-<!--                  <path :fill="messageType===3?'white':'black'" d="M300.860952 965.241905A48.761905 48.761905 0 0 1 270.140952 877.714286l454.704762-365.714286L270.140952 146.285714a48.761905 48.761905 0 1 1 61.196191-75.824762l501.76 403.504762a48.761905 48.761905 0 0 1 0 75.824762L331.337143 954.270476a48.761905 48.761905 0 0 1-30.476191 10.971429z" p-id="2518"></path>-->
-<!--                </svg>-->
-<!--                <span>-->
-<!--                用户消息-->
-<!--            </span>-->
-<!--              </div>-->
-<!--              <el-divider style="margin: 0"  v-if="dropDown"/>-->
-<!--              <div class="userMessage" :class="[dropDown?'drop-down':'disappear',[item['isFocus']?'userMessageColor':'']]" v-for="(item,i) in userList" tabindex="-1" :key="i" @click="userFocus(i)">-->
-<!--                <el-avatar style="width: 20px;height: 20px;margin: 5px 0 0 20px" :src="headPortrait+item['headPortrait']"/>-->
-<!--                <span style="margin-left: 20px">{{item['name']}}</span>-->
-<!--              </div>-->
-<!--            </div>-->
+            <div class="body-left-list" :class="messageType===1?'pitch-on':'uncheck'" @click="choose(1)">{{language===1?'System announcement':'系统公告'}}</div>
+            <div class="body-left-list" :class="messageType===2?'pitch-on':'uncheck'" @click="choose(2)">{{language===1?'Important notice':'重要通知'}}</div>
           </perfect-scrollbar>
         </div>
       </span>
       <span class="body-right">
         <div v-if="messageType===1" class="body-right-Project-1">
-              <span class="announcementSetUp">
-                <perfect-scrollbar>
-                  <div style="width: 96%;display: flex;margin: 20px 0 0 2%;">
-                    <span style="line-height: 30px;margin-right: 20px">{{language===1?'Whether to enable:':'是否启用:'}}</span>
-                    <el-switch
-                      v-model="isAnnouncement"
-                      class="ml-2"
-                      inline-prompt
-                      style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949"
-                      active-text="Y"
-                      inactive-text="N"
+            <span class="announcementSetUp">
+              <perfect-scrollbar>
+                <div style="width: 96%;display: flex;margin: 20px 0 0 2%;">
+                  <span style="line-height: 30px;margin-right: 20px">{{language===1?'Whether to enable:':'是否启用:'}}</span>
+                  <el-switch
+                    v-model="isAnnouncement"
+                    class="ml-2"
+                    inline-prompt
+                    style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949"
+                    active-text="Y"
+                    inactive-text="N"
+                  />
+                </div>
+                <div style="width: 96%;margin: 20px 0 0 2%" v-show="isAnnouncement">
+                  <div style="width: 100%;">
+                    <el-date-picker
+                      v-model="contentAnnouncement.time"
+                      type="datetimerange"
+                      range-separator="To"
+                      :start-placeholder="language===1?'Start date':'开始时间'"
+                      :end-placeholder="language===1?'End date':'结束时间'"
                     />
                   </div>
-                  <div style="width: 96%;margin: 20px 0 0 2%" v-show="isAnnouncement">
-                    <div style="width: 100%;">
-                      <el-date-picker
-                        v-model="contentAnnouncement.time"
-                        type="datetimerange"
-                        range-separator="To"
-                        :start-placeholder="language===1?'Start date':'开始时间'"
-                        :end-placeholder="language===1?'End date':'结束时间'"
-                      />
-                    </div>
-                    <div style="width: 100%;margin-top: 20px">
-                      <el-input v-model="contentAnnouncement.title" :placeholder="language===1?'Title':'标题'" clearable />
-                    </div>
-                    <div style="width: 100%;margin-top: 20px">
-                      <el-table :data="contentAnnouncement.content" border style="width: 100%">
-                        <el-table-column label="类型" align="center">
-                          <template #default="{row}">
-                            <el-select v-model="row.type" :placeholder="language===1?'Select':'选择'">
-                            <el-option
-                              v-for="item in contentType"
-                              :key="item.value"
-                              :value="item.value"
-                              :label="language===1?item.English:item.Chinese">
-                            </el-option>
-                          </el-select>
-                          </template>
-                        </el-table-column>
-                        <el-table-column label="内容" align="center">
-                          <template #default="props">
-                            <span v-if="props.row.type === 0">
-                              <el-input v-model="props.row.text" :placeholder="language===1?'Input':'输入'" clearable></el-input>
-                            </span>
-                            <span v-else-if="props.row.type === 1">
-                              <div v-if="props.row.pictureUrl" style="width: 120px;height: 120px;border-radius: 20px;border: 1px solid #b1b4b9">
-                                <div style="width: 90%;text-align: right;">
-                                  <svg t="1658497974158" style="cursor: pointer;" @click="handleRemove(props.$index)" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2266" width="10" height="10">
-                                    <path d="M562.688 510.976l321.408-321.408a36.672 36.672 0 0 0-51.84-51.84l-321.28 321.28L189.568 137.6a36.672 36.672 0 0 0-51.84 51.84l321.28 321.536-321.408 321.28a36.672 36.672 0 0 0 51.84 51.84l321.536-321.408 321.408 321.472a36.672 36.672 0 0 0 51.84-51.84z" fill="#ff0000" p-id="2267"></path>
-                                  </svg>
-                                </div>
-                                <el-image style="cursor: pointer;width: 80px;height: 80px;" @click="handlePictureCardPreview(props.$index)" :src="props.row['pictureUrl']" fit="scale-down" alt="" />
+                  <div style="width: 100%;margin-top: 20px">
+                    <el-input v-model="contentAnnouncement.title" :placeholder="language===1?'Title':'标题'" clearable />
+                  </div>
+                  <div style="width: 100%;margin-top: 20px">
+                    <el-table :data="contentAnnouncement.content" border style="width: 100%;">
+                      <el-table-column :label="language===1?'Type':'类型'" align="center">
+                        <template #default="{row}">
+                          <el-select v-model="row.type" :placeholder="language===1?'Select':'选择'">
+                          <el-option
+                            v-for="item in contentType"
+                            :key="item.value"
+                            :value="item.value"
+                            :label="language===1?item.English:item.Chinese">
+                          </el-option>
+                        </el-select>
+                        </template>
+                      </el-table-column>
+                      <el-table-column :label="language===1?'Content':'内容'" align="center">
+                        <template #default="props">
+                          <span v-if="props.row.type === 0">
+                            <el-input v-model="props.row.text" :placeholder="language===1?'Input':'输入'" clearable></el-input>
+                          </span>
+                          <span v-else-if="props.row.type === 1">
+                            <div v-if="props.row.pictureUrl" style="width: 120px;height: 120px;border-radius: 20px;border: 1px solid #b1b4b9">
+                              <div style="width: 90%;text-align: right;">
+                                <svg t="1658497974158" style="cursor: pointer;" @click="handleRemove(props.$index)" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2266" width="10" height="10">
+                                  <path d="M562.688 510.976l321.408-321.408a36.672 36.672 0 0 0-51.84-51.84l-321.28 321.28L189.568 137.6a36.672 36.672 0 0 0-51.84 51.84l321.28 321.536-321.408 321.28a36.672 36.672 0 0 0 51.84 51.84l321.536-321.408 321.408 321.472a36.672 36.672 0 0 0 51.84-51.84z" fill="#ff0000" p-id="2267"></path>
+                                </svg>
                               </div>
-                              <el-upload v-show="!props.row.pictureUrl" ref="upload" action="#" list-type="picture" accept=".jpg,.png,.jpeg,.gif,.webp" :show-file-list="false" :auto-upload="false"  :on-change="(file,fileList)=>updateChange(file,fileList,props.$index)">
-                                <el-icon><Plus /></el-icon>
-                              </el-upload>
-                            </span>
-                            <span v-else-if="props.row.type === 2">
-                              <el-input v-model="props.row.text" :placeholder="language===1?'text':'文本'" clearable></el-input>
-                              <el-input v-model="props.row.hyperlinks" :placeholder="language===1?'hyperlinks':'超链接'" clearable></el-input>
-                            </span>
-                          </template>
-                        </el-table-column>
-                        <el-table-column label="操作" align="center">
-                          <template #default="props">
-                            <el-dropdown trigger="click" placement="bottom-end" @command="(command)=>handleCommand(command,props.$index)">
-                              <svg style="cursor:pointer;" t="1657871751755" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3823" width="30" height="30">
-                                <path d="M415.930119 223.790358c0-52.980346 43.003528-95.983874 95.983874-95.983874s95.983874 43.003528 95.983874 95.983874-43.003528 95.983874-95.983874 95.983874S415.930119 276.770704 415.930119 223.790358z" p-id="3824"></path>
-                                <path d="M415.930119 511.741979c0-52.980346 43.003528-95.983874 95.983874-95.983874s95.983874 43.003528 95.983874 95.983874-43.003528 95.983874-95.983874 95.983874S415.930119 564.722325 415.930119 511.741979z" p-id="3825"></path>
-                                <path d="M415.930119 799.865614c0-52.980346 43.003528-95.983874 95.983874-95.983874s95.983874 43.003528 95.983874 95.983874-43.003528 95.983874-95.983874 95.983874S415.930119 852.673946 415.930119 799.865614z" p-id="3826"></path>
-                              </svg>
-                              <template #dropdown>
-                                <el-dropdown-menu>
-                                  <el-dropdown-item :command="1">{{language===1?'More operations':'更多操作'}}</el-dropdown-item>
-                                  <el-dropdown-item :command="2">{{language===1?'Delete':'删除'}}</el-dropdown-item>
-                                </el-dropdown-menu>
-                              </template>
-                            </el-dropdown>
-                          </template>
-                        </el-table-column>
-                      </el-table>
-                      <el-button style="width: 80%;margin: 20px 0 0 10%" @click="contentAdd">新增</el-button>
-                      <div style="width: 80%;margin: 20px 0 0 10%;text-align: center">
-                        <el-button @click="announcementCancel">取消</el-button>
-                        <el-button @click="announcementSave" type="primary">保存</el-button>
-                      </div>
+                              <teleport to="#modal-wrapper">
+                              </teleport>
+                              <el-image style="width: 80px;height: 80px;cursor: pointer" @click="handlePictureCardPreview(props.$index)" :src="props.row['pictureUrl']" fit="scale-down" />
+                            </div>
+                            <el-upload v-show="!props.row.pictureUrl" ref="upload" action="#" list-type="picture" accept=".jpg,.png,.jpeg,.gif,.webp" :show-file-list="false" :auto-upload="false"  :on-change="(file,fileList)=>updateChange(file,fileList,props.$index)">
+                              <el-icon><Plus /></el-icon>
+                            </el-upload>
+                          </span>
+                          <span v-else-if="props.row.type === 2">
+                            <el-input v-model="props.row.text" :placeholder="language===1?'text':'文本'" clearable></el-input>
+                            <el-input v-model="props.row.hyperlinks" :placeholder="language===1?'hyperlinks':'超链接'" clearable></el-input>
+                          </span>
+                        </template>
+                      </el-table-column>
+                      <el-table-column :label="language===1?'Operation':'操作'" align="center">
+                        <template #default="props">
+                          <el-dropdown trigger="click" placement="bottom-end" @command="(command)=>handleCommand(command,props.$index)">
+                            <svg style="cursor:pointer;" t="1657871751755" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3823" width="30" height="30">
+                              <path d="M415.930119 223.790358c0-52.980346 43.003528-95.983874 95.983874-95.983874s95.983874 43.003528 95.983874 95.983874-43.003528 95.983874-95.983874 95.983874S415.930119 276.770704 415.930119 223.790358z" p-id="3824"></path>
+                              <path d="M415.930119 511.741979c0-52.980346 43.003528-95.983874 95.983874-95.983874s95.983874 43.003528 95.983874 95.983874-43.003528 95.983874-95.983874 95.983874S415.930119 564.722325 415.930119 511.741979z" p-id="3825"></path>
+                              <path d="M415.930119 799.865614c0-52.980346 43.003528-95.983874 95.983874-95.983874s95.983874 43.003528 95.983874 95.983874-43.003528 95.983874-95.983874 95.983874S415.930119 852.673946 415.930119 799.865614z" p-id="3826"></path>
+                            </svg>
+                            <template #dropdown>
+                              <el-dropdown-menu>
+                                <el-dropdown-item :command="1">{{language===1?'More operations':'更多操作'}}</el-dropdown-item>
+                                <el-dropdown-item :command="2">{{language===1?'Delete':'删除'}}</el-dropdown-item>
+                              </el-dropdown-menu>
+                            </template>
+                          </el-dropdown>
+                        </template>
+                      </el-table-column>
+                    </el-table>
+                    <el-button style="width: 80%;margin: 20px 0 0 10%" @click="contentAdd">{{language===1?'Add':'新增'}}</el-button>
+                    <div style="width: 80%;margin: 20px 0 0 10%;text-align: center">
+                      <el-button @click="announcementCancel">{{language===1?'Cancel':'取消'}}</el-button>
+                      <el-button @click="announcementSave" :disabled="userPermissions && userPermissions['systemAnnouncement']===0" type="primary">{{language===1?'Save':'保存'}}</el-button>
                     </div>
                   </div>
-                </perfect-scrollbar>
-              </span>
-              <span v-show="isAnnouncement" class="announcementPreview">
-                <perfect-scrollbar>
-                  <div style="font-size: 20px;width: 96%;margin: 10px 0 0 2%;text-align: center"><b>{{contentAnnouncement.title}}</b></div>
-                  <div style="width: 100%;" v-for="(item,i) in contentAnnouncement.content" :key="i">
-                    <div class="preview-content" :style="{'color': item['color'],'text-align': item['align'],'font-size': item['fontSize']+'px'}" v-if="item['type']===0">
-                      {{item['text']}}
-                    </div>
-                    <div class="preview-content" v-if="item['type']===1 && item['pictureUrl']" :style="{'text-align': item['align']}">
-                      <el-image :fit="item['pictureFit']?'scale-down':'fill'" :style="{'width':item['width']+'px','height':item['height']+'px'}" :src="item['pictureUrl']" />
-                    </div>
-                    <div class="preview-content" v-if="item['type']===2">
-                    </div>
+                </div>
+              </perfect-scrollbar>
+            </span>
+            <span v-show="isAnnouncement" class="announcementPreview">
+              <perfect-scrollbar>
+                <div style="font-size: 20px;width: 96%;margin: 10px 0 0 2%;text-align: center"><b>{{contentAnnouncement.title}}</b></div>
+                <div style="width: 100%;" v-for="(item,i) in contentAnnouncement.content" :key="i">
+                  <div class="preview-content" :style="{'color': item['color'],'text-align': item['align'],'font-size': item['fontSize']+'px'}" v-if="item['type']===0">
+                    {{item['text']}}
                   </div>
-                </perfect-scrollbar>
-              </span>
-      </div>
+                  <div class="preview-content" v-if="item['type']===1 && item['pictureUrl']" :style="{'text-align': item['align']}">
+                    <el-image :fit="item['pictureFit']?'scale-down':'fill'" :style="{'width':item['width']+'px','height':item['height']+'px'}" :src="item['pictureUrl']" />
+                  </div>
+                  <div class="preview-content" v-if="item['type']===2" :style="{'color': item['color'],'text-align': item['align'],'font-size': item['fontSize']+'px'}">
+                    <a :href="item['hyperlinks']" :style="{'text-decoration':item['hyperlinksCss']['underline']?'':'none'}" :target="item['hyperlinksCss']['target']">{{item['text']}}</a>
+                  </div>
+                </div>
+              </perfect-scrollbar>
+            </span>
+         </div>
         <div v-else-if="messageType===2" class="body-right-Project-2">
           <div class="important-div">
             <div style="width: 100%;">{{language===1?'Recipient':'收件人'}}:</div>
-            <div style="width: 100%;margin-top: 10px">
-              <el-select style="width: 100%;">
-                <el-option>
-
-                </el-option>
+            <div style="width: 100%;margin-top: 10px;display: flex">
+              <span style="width: 90%;">
+                <el-select v-if="importantParameter.acceptType"
+                           v-model="importantParameter.system"
+                           multiple
+                           collapse-tags
+                           placeholder="Select"
+                           style="width: 100%;">
+                <el-option
+                  v-for="item in userList"
+                  :key="item['id']"
+                  :label="item['name']+'-'+item['email']"
+                  :value="item['email']"
+                />
               </el-select>
+                <el-input v-else style="width: 100%;" v-model="importantParameter.custom" :placeholder="language===1?'Please enter email address':'请输入电子邮箱'"></el-input>
+              </span>
+              <sapn style="width: 10%;text-align: center">
+                <el-tooltip :content="importantParameter.acceptType?language===1?'Switching Custom':'切换自定义':language===1?'Switching system':'切换系统内'" :disabled="importantParameter.disabled" placement="top">
+                  <el-switch
+                    v-model="importantParameter.acceptType"
+                    style="--el-switch-on-color: #13ce66; --el-switch-off-color: #2C95D4"
+                  />
+                </el-tooltip>
+              </sapn>
             </div>
           </div>
           <div class="important-div">
             <el-input
-              v-model="importantText"
+              v-model="importantParameter.content"
               maxlength="400"
               :placeholder="language===1?'Please input':'请输入'"
               show-word-limit
@@ -162,50 +169,21 @@
           <div class="important-div" style="display: flex">
             <span style="width: 50%;text-align: right;display: flex">
               <el-image fit="scale-down" :src="importantYzm.img" style="cursor: pointer;height: 100%" @click="importantYZM"></el-image>
-              <el-input style="margin-left: 20px;width: 100px;" maxlength="4" v-model="importantYzmText" :placeholder="language===1?'Please input':'请输入'" clearable></el-input>
+              <el-input style="margin-left: 20px;width: 100px;" maxlength="4" v-model="importantYzmText" :placeholder="language===1?'Please input':'请输入'"></el-input>
             </span>
             <span style="width: 50%;text-align: right">
-              <el-button type="primary" :disabled="importantYzmText===''" @click="importantSend">{{language===1?'Send':'发送'}}</el-button>
+              <el-button type="primary" :disabled="userPermissions && userPermissions['importantNotice']===0" @click="importantSend">{{language===1?'Send':'发送'}}</el-button>
             </span>
-          </div>
-        </div>
-        <div v-else-if="messageType===3" class="body-right-Project-3">
-          <div v-if="userList[userIsFocus]['isFocus']" class="chat-screen">
-            <div class="chat-screen-message">
-              <div style="width: 96%;margin: 20px 0 0 2%;height: 300px">
-                <perfect-scrollbar>
-                  <div>
-                    <el-avatar shape="square" :size="50" :src="headPortrait+'24.png'" />
-                  </div>
-                </perfect-scrollbar>
-              </div>
-              <div class="chat-screen-send">
-                <el-input
-                  style="margin-top: 10px"
-                  v-model="importantText"
-                  show-word-limit
-                  resize="none"
-                  :autosize="{ minRows: 3, maxRows: 3 }"
-                  type="textarea"
-                />
-                <div style="width: 100%;text-align: right;"><el-button style="margin: 10px 20px 0 0;">发送(S)</el-button></div>
-            </div>
-            </div>
           </div>
         </div>
       </span>
     </perfect-scrollbar>
-    <el-dialog width="20%" v-model="dialogVisible">
-      <el-image
-        :src="dialogImageUrl"
-        fit="scale-down"
-      />
-    </el-dialog>
+    <el-image-viewer v-if="dialogVisible" @close="dialogVisible=false" :url-list="[dialogImageUrl]"/>
     <el-drawer
       v-model="drawerAnnouncement"
       :title="language===1?'More operations':'更多操作'"
       direction="ltr">
-      <div v-if="contentAnnouncement.content[current]['type']===0" style="width: 100%;">
+      <div v-if="contentAnnouncement.content[current]['type']===0 || contentAnnouncement.content[current]['type']===2" style="width: 100%;">
         <div class="drawer-div">
           <span>{{language===1?'color':'颜色'}}:</span>
           <span><el-color-picker v-model="contentAnnouncement.content[current]['color']" /></span>
@@ -227,6 +205,22 @@
         <div class="drawer-div">
           <span>{{language===1?'Height':'高度'}}:</span>
           <span><el-input-number v-model="contentAnnouncement.content[current]['height']" :min="10" :max="200" /></span>
+        </div>
+      </div>
+      <div v-if="contentAnnouncement.content[current]['type']===2">
+        <div class="drawer-div">
+          <span>{{language===1?'Underline':'下划线'}}:</span>
+          <span><el-checkbox v-model="contentAnnouncement.content[current]['hyperlinksCss']['underline']"></el-checkbox></span>
+        </div>
+        <div class="drawer-div">
+          <el-select v-model="contentAnnouncement.content[current]['hyperlinksCss']['target']">
+            <el-option
+              v-for="item in jumpWay"
+              :key="item.value"
+              :label="language===1?item.English:item.Chinese"
+              :value="item.value">
+            </el-option>
+          </el-select>
         </div>
       </div>
       <div style="width: 100%;">
@@ -259,6 +253,13 @@ interface contentAnnouncementInterface{
   title: string,
   content: any[]
 }
+interface importantParameterInterface{
+  disabled: boolean,
+  acceptType: boolean,
+  system: string[],
+  custom: string,
+  content: string
+}
 /**
  * 变量区
  */
@@ -269,9 +270,12 @@ const { $imgUrl } = proxy as any;
 const { $http } = proxy as any;
 const { $cookies } = proxy as any;
 const modifyIsLogTo:any = inject('modifyIsLogTo');
+const userPermissions:any = inject('userPermissions');
+const userInformation:any = inject('userInformation');
 const headPortrait = $imgUrl+'/headPortrait/';
 const messageType = ref<number>(1);
 const alignOptions = [{English:'left',Chinese:'左',value: 0},{English:'right',Chinese:'右',value: 1},{English:'center',Chinese:'居中',value: 2}];
+const jumpWay = [{English:'Current Page Display',Chinese:'当前页面显示',value: '_self'},{English:'New page display',Chinese:'新页面显示',value: '_blank'},{English:'Corresponding window display',Chinese:'相应的窗口显示',value: 'three'}];
 // 系统公告
 const current = ref<number>(0);
 const isAnnouncement = ref<boolean>(false);
@@ -286,30 +290,20 @@ const dialogVisible = ref(false);
 const upload = ref<any>(null);
 const drawerAnnouncement = ref(false);
 // 重要通知
-const importantText = ref<string>('');
+const importantParameter = reactive<importantParameterInterface>({
+  disabled: false,
+  acceptType: true,
+  system: [],
+  custom: '',
+  content: ''
+});
 const importantYzm = reactive({
   img:'',
   text:''
 });
 const importantYzmText = ref<string>('');
+const userList = ref<any[]>([]);
 // 用户消息
-const user = reactive<any>({
-  headPortrait:'24.png',
-  name:'aaa R'
-});
-const userIsFocus = ref<number>(0);
-const userList = ref<any>([
-  {headPortrait:'24.png',name:'ccc',sex:'男',time:'2022-07-07 10:40',mail:'1478588530@qq.com',isFocus: false,instructions: '啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊'},
-  {headPortrait:'0.png',name:'aaa R',sex:'男',time:'2022-07-07 10:40',mail:'1478588530@qq.com',isFocus: false,instructions: '水水水水水水水水水水水水水水水水水水水'},
-  {headPortrait:'0.png',name:'ddd R',sex:'男',time:'2022-07-07 10:40',mail:'1478588530@qq.com',isFocus: false,instructions: '踩踩踩踩踩踩踩踩踩踩踩踩踩踩踩踩踩踩从'},
-  {headPortrait:'24.png',name:'eee R',sex:'男',time:'2022-07-07 10:40',mail:'1478588530@qq.com',isFocus: false,instructions: '顶顶顶顶顶顶顶顶顶顶顶顶顶顶顶顶顶顶顶'},
-  {headPortrait:'0.png',name:'xxx R',sex:'男',time:'2022-07-07 10:40',mail:'1478588530@qq.com',isFocus: false,instructions: '日日日日日日日日日日日日日日日日日日日'},
-  {headPortrait:'0.png',name:'vvv R',sex:'男',time:'2022-07-07 10:40',mail:'1478588530@qq.com',isFocus: false,instructions: '她她她她她她她她她她她她她她她她她她她'},
-  {headPortrait:'0.png',name:'qqq R',sex:'男',time:'2022-07-07 10:40',mail:'1478588530@qq.com',isFocus: false,instructions: '嘻嘻嘻嘻嘻嘻嘻嘻嘻嘻嘻嘻嘻嘻嘻嘻嘻嘻嘻'},
-  {headPortrait:'0.png',name:'www R',sex:'男',time:'2022-07-07 10:40',mail:'1478588530@qq.com',isFocus: false,instructions: '呱呱呱呱呱呱呱呱呱呱呱呱呱呱呱古古怪怪'},
-  {headPortrait:'0.png',name:'eee R',sex:'男',time:'2022-07-07 10:40',mail:'1478588530@qq.com',isFocus: false,instructions: '钱钱钱钱钱钱钱钱钱钱钱钱钱钱钱钱钱钱钱'},
-  {headPortrait:'0.png',name:'rrr R',sex:'男',time:'2022-07-07 10:40',mail:'1478588530@qq.com',isFocus: false,instructions: '哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈'}
-]);
 const dropDown = ref<boolean>(false);
 /**
  * 方法区
@@ -322,21 +316,15 @@ const choose = (num:number) => {
       messageType.value = num;
       break;
     case 2:
+      if(userPermissions.value['importantSystemUsers']===0 || userPermissions.value['importantNoticeCustom']===0){
+        if (userPermissions.value['importantNoticeCustom']===1) importantParameter.acceptType = false;
+      }
       dropDown.value = false;
       importantInit();
       messageType.value = num;
       break;
-    case 3:
-      messageType.value = num;
-      break;
   }
 }
-// const userFocus = (val:number) => {
-//   choose(3);
-//   userList.value[userIsFocus.value]['isFocus'] = false;
-//   userIsFocus.value = val;
-//   userList.value[val]['isFocus'] = true;
-// }
 const base64 = (file:any, callBack: (data: string | ArrayBuffer | null) => void) => {
   let reader = new FileReader();
   reader.readAsDataURL(file)
@@ -369,7 +357,11 @@ const contentAdd = () => {
     fontSize: 10,
     align: 'left',
     width: 50,
-    height: 50
+    height: 50,
+    hyperlinksCss:{
+      target: '_blank',
+      underline: true
+    }
   });
 }
 const announcementCancel = () => {
@@ -418,16 +410,77 @@ const importantSend = () =>{
     });
     importantYZM();
   }else{
-    ElMessage({
-      message: language.value===1?'Send a success':'发送成功',
-      type: 'success',
+    let data:string[] = [];
+    if (importantParameter.content === ''){
+      ElMessage({
+        message: language.value===1?'The content cannot be empty':'内容不能为空',
+        type: 'warning',
+      });
+      return;
+    }
+    if (importantParameter.acceptType){
+      if (importantParameter.system.length===0){
+        ElMessage({
+          message: language.value===1?'The recipient cannot be blank':'收件人不能为空',
+          type: 'warning',
+        });
+        return;
+      }else{
+        data = importantParameter.system;
+      }
+    }else{
+      if (!/^\w{3,}(\.w+)*@[A-z0-9]+(\.[A-z]{2,5}){1,2}$/.test(importantParameter.custom)){
+        ElMessage({
+          message: language.value===1?'Email format error':'电子邮件格式错误',
+          type: 'warning',
+        });
+        return;
+      }else{
+        data.push(importantParameter.custom)
+      }
+    }
+    $http.post('/L/mail',{
+      content: importantParameter.content,
+      recipient: data,
+      uuid: $cookies.get('uuid')
+    }).then((res:any)=>{
+      if (res.data){
+        ElMessage({
+          message: language.value===1?'Send a success':'发送成功',
+          type: 'success',
+        });
+      }else{
+        ElMessage({
+          message: language.value===1?'Send failure':'发送失败',
+          type: 'warning',
+        });
+      }
     });
   }
+}
+const obtainUserList = () => {
+  $http.get('/admin/c896d9988afd44939906b45e8703df3a',{
+    params:{
+      uuid: $cookies.get('uuid'),
+      limit: 1000,
+      page: 1
+    }
+  }).then((res:any)=>{
+    if (res.data != null){
+      let uuid = $cookies.get('uuid');
+      res.data['data'].forEach((item:any)=>{
+        if (item['userId'] !== uuid)
+          userList.value.push(item);
+      });
+    }
+  })
 }
 // 用户消息
 onMounted(()=>{
   if ($cookies.get('uuid')===null){
     modifyIsLogTo(false);
+  }else{
+    obtainUserList();
   }
 });
 </script>
@@ -514,24 +567,6 @@ onMounted(()=>{
           background-color: #f3f6fb;
           color: black;
          }
-        .drop-down{
-          animation: drop-down 1s;
-          animation-fill-mode: forwards;
-          overflow: hidden;
-        }
-        .disappear{
-          display: none;
-        }
-        @keyframes drop-down{
-          from {
-            height: 0px;
-            opacity: 0;
-          }
-          to {
-            height: 30px;
-            opacity: 1;
-          }
-        }
       }
     }
   }

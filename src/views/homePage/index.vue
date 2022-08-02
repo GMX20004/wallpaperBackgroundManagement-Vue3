@@ -47,39 +47,34 @@
               <div v-for="(item,i) in administratorList" tabindex="-1" class="administrator-list" :key="i" @focus="adminFocus(i)" :class="[item['isFocus']?'administratorColor':'']">
               <span style="width: 40px;margin-left: 0"><el-avatar style="width: 40px;height: 40px;margin: 10px 0 0 10px" :src="headPortrait+item['headPortrait']"/></span>
               <span style="width: 100px;"><b>{{item['name']}}</b></span>
-              <span style="width: 200px;color: #8d8d8d">{{item['mail']}}</span>
+              <span style="width: 200px;color: #8d8d8d">{{item['email']}}</span>
               <span style="width: 50px;color: #8d8d8d">{{item['sex']}}</span>
-              <span style="width: 220px;color: #8d8d8d">加入时间：{{item['time']}}</span>
+              <span style="width: 220px;color: #8d8d8d">加入时间：{{item['creationTime']}}</span>
               <span style="width: 30px;">
-                <svg style="margin-top: 15px;cursor:pointer;" t="1657169528823" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2250" width="30" height="30">
-                  <path d="M223.962372 607.897867c-52.980346 0-95.983874-43.003528-95.983874-95.983874s43.003528-95.983874 95.983874-95.983874 95.983874 43.003528 95.983874 95.983874S276.942718 607.897867 223.962372 607.897867z" p-id="2251"></path>
-                  <path d="M511.913993 607.897867c-52.980346 0-95.983874-43.003528-95.983874-95.983874s43.003528-95.983874 95.983874-95.983874 95.983874 43.003528 95.983874 95.983874S564.894339 607.897867 511.913993 607.897867z" p-id="2252"></path>
-                  <path d="M800.037628 607.897867c-52.980346 0-95.983874-43.003528-95.983874-95.983874s43.003528-95.983874 95.983874-95.983874 95.983874 43.003528 95.983874 95.983874S852.84596 607.897867 800.037628 607.897867z" p-id="2253"></path>
-                </svg>
+                <el-dropdown trigger="click" @command="(command)=>adminHandleCommand(command,item['id'],item['userId'])">
+                    <svg style="margin-top: 15px;cursor:pointer;" t="1657169528823" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2250" width="30" height="30">
+                      <path d="M223.962372 607.897867c-52.980346 0-95.983874-43.003528-95.983874-95.983874s43.003528-95.983874 95.983874-95.983874 95.983874 43.003528 95.983874 95.983874S276.942718 607.897867 223.962372 607.897867z" p-id="2251"></path>
+                      <path d="M511.913993 607.897867c-52.980346 0-95.983874-43.003528-95.983874-95.983874s43.003528-95.983874 95.983874-95.983874 95.983874 43.003528 95.983874 95.983874S564.894339 607.897867 511.913993 607.897867z" p-id="2252"></path>
+                      <path d="M800.037628 607.897867c-52.980346 0-95.983874-43.003528-95.983874-95.983874s43.003528-95.983874 95.983874-95.983874 95.983874 43.003528 95.983874 95.983874S852.84596 607.897867 800.037628 607.897867z" p-id="2253"></path>
+                    </svg>
+                  <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item :command="1">{{language===1?'Rights management':'权限管理'}}</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
               </span>
             </div>
             </perfect-scrollbar>
           </div>
           <div class="body-left-hierarchy3">
-            <span><b>{{language===1?'Schedule':'时间表'}}</b></span>
+            <span><b>{{language===1?'Access number':'访问数'}}</b></span>
             <span style="display: flex">
               <span style="width: 50%;text-align: right;padding-right: 10px">{{language===1?time[1]:time[0]}}</span>
-              <span style="width: 50%;">
-                <el-dropdown style="margin-top: 3px" trigger="click" @command="handleCommand2">
-                  <el-button round style="background-color: black;color: white">
-                    {{administratorList[adminIsFocus]['name']}}<el-icon class="el-icon--right"><arrow-down /></el-icon>
-                  </el-button>
-                  <template #dropdown>
-                    <el-dropdown-menu>
-                      <el-dropdown-item :command="1">{{language===1?'Send a message':'发送消息'}}</el-dropdown-item>
-                    </el-dropdown-menu>
-                  </template>
-                </el-dropdown>
-              </span>
             </span>
           </div>
           <div class="body-left-hierarchy4">
-            <span style="width: 100px;height: 100%;">
+            <span style="width: 150px;height: 100%;">
               <div class="calendar" :class="calendarChoose===1?'background-black':''" @click="calendarClick(1)"  >
                 7{{language===1?' Day':' 天'}}
               </div>
@@ -90,7 +85,7 @@
                 17{{language===1?' Day':' 天'}}
               </div>
             </span>
-            <span style="margin-left: 20px;width: calc(100% - 120px);height: 100%;text-align: center;">
+            <span style="margin-left: 10px;width: calc(100% - 160px);height: 100%;text-align: center;">
               <div ref="chart2" id="theLineChart" style="width: 100%;height: 100%;"></div>
             </span>
           </div>
@@ -130,6 +125,20 @@
           </div>
         </span>
       </div>
+      <el-dialog v-model="permissionsDialog" v-loading="permissionsLoading" :title="language===1?'Rights management':'权限管理'" width="30%">
+        <el-tree
+          ref="permissionsTree"
+          :data="permissionsData"
+          accordion
+          show-checkbox
+          node-key="id"
+          :props="permissionsProps"
+        />
+        <div style="width: 100%;text-align: center;margin-top: 10px">
+          <el-button @click="permissionsDialog=false">{{language===1?'Cancel':'取消'}}</el-button>
+          <el-button @click="permissionsClick" :disabled="userPermissions['changePermissions']===0" type="primary">{{language===1?'Save':'保存'}}</el-button>
+        </div>
+      </el-dialog>
     </perfect-scrollbar>
   </div>
 </template>
@@ -137,11 +146,13 @@
 <script setup lang="ts">
 import { ref, inject, reactive, onMounted } from "vue";
 import { ElMessage } from "element-plus";
+/**
+ * 接口区
+ */
 
 /**
  * 变量区
  */
-
 const proxy = inject("proxy");
 const { $imgUrl } = proxy as any;
 const { $http } = proxy as any;
@@ -153,29 +164,14 @@ let language:any = inject('language');
 const modifyLanguage:any = inject('modifyLanguage');
 const modifyIsLogTo:any = inject('modifyIsLogTo');
 const userInformation:any = inject('userInformation');
+const userPermissions:any = inject('userPermissions');
 const date = new Date();
 const time = ref<any>([]);
 // 月份
 const monthEnglishFormat = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const monthChineseFormat = ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
-// 星期
-const weekEnglishFormat = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-const weekChineseFormat = ['周日','周一','周二','周三','周四','周五','周六'];
 const calendarChoose = ref(1);
-const calendar = ref<any>([]);
 const adminIsFocus = ref<number>(0);
-const administratorList = ref<any>([
-  {headPortrait:'0.png',name:'Hira R',sex:'男',time:'2022-07-07 10:40',mail:'1478588530@qq.com',isFocus: false,signature: '啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊'},
-  {headPortrait:'0.png',name:'Hira R',sex:'男',time:'2022-07-07 10:40',mail:'1478588530@qq.com',isFocus: false,signature: '水水水水水水水水水水水水水水水水水水水'},
-  {headPortrait:'0.png',name:'Hira R',sex:'男',time:'2022-07-07 10:40',mail:'1478588530@qq.com',isFocus: false,signature: '踩踩踩踩踩踩踩踩踩踩踩踩踩踩踩踩踩踩从'},
-  {headPortrait:'0.png',name:'Hira R',sex:'男',time:'2022-07-07 10:40',mail:'1478588530@qq.com',isFocus: false,signature: '顶顶顶顶顶顶顶顶顶顶顶顶顶顶顶顶顶顶顶'},
-  {headPortrait:'0.png',name:'Hira R',sex:'男',time:'2022-07-07 10:40',mail:'1478588530@qq.com',isFocus: false,signature: '日日日日日日日日日日日日日日日日日日日'},
-  {headPortrait:'0.png',name:'Hira R',sex:'男',time:'2022-07-07 10:40',mail:'1478588530@qq.com',isFocus: false,signature: '她她她她她她她她她她她她她她她她她她她'},
-  {headPortrait:'0.png',name:'Hira R',sex:'男',time:'2022-07-07 10:40',mail:'1478588530@qq.com',isFocus: false,signature: '嘻嘻嘻嘻嘻嘻嘻嘻嘻嘻嘻嘻嘻嘻嘻嘻嘻嘻嘻'},
-  {headPortrait:'0.png',name:'Hira R',sex:'男',time:'2022-07-07 10:40',mail:'1478588530@qq.com',isFocus: false,signature: '呱呱呱呱呱呱呱呱呱呱呱呱呱呱呱古古怪怪'},
-  {headPortrait:'0.png',name:'Hira R',sex:'男',time:'2022-07-07 10:40',mail:'1478588530@qq.com',isFocus: false,signature: '钱钱钱钱钱钱钱钱钱钱钱钱钱钱钱钱钱钱钱'},
-  {headPortrait:'0.png',name:'Hira R',sex:'男',time:'2022-07-07 10:40',mail:'1478588530@qq.com',isFocus: false,signature: '哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈'}
-]);
+const administratorList = ref<any>([]);
 const arrange = ref<any>([{label: '2022-7-15',id: 0},{label: '2022-7-15',id: 1},{label: '2022-7-15',id: 2}]);
 const data = reactive<any>({
   option1:{
@@ -194,7 +190,7 @@ const data = reactive<any>({
     },
     series: [
       {
-        name: '壁纸数',
+        name: language.value===1?'Wallpaper number':'壁纸数量',
         type: 'pie',
         radius: ['40%', '70%'],
         avoidLabelOverlap: false,
@@ -219,8 +215,8 @@ const data = reactive<any>({
           show: false
         },
         data: [
-          { value: 0, name: '已上架'},
-          { value: 0, name: '待审核'}
+          { value: 0, name: language.value===1?'Online':'在线'},
+          { value: 0, name: language.value===1?'Not online':'不在线'}
         ]
       }
     ]
@@ -245,6 +241,231 @@ const myCharts = ref<any>();
 const myCharts2 = ref<any>();
 const number = ref<any>({userNumber:0,wallpaperNumber:0,testWallpaperNumber:0,feedbackNumber:0});
 const access = ref<any[]>([]);
+const permissionsTree = ref<any>();
+const permissionsDialog = ref<boolean>(false);
+const permissionsProps = reactive({
+  children: 'children',
+  label: '',
+  disabled: ''
+});
+let permissionsData = ref<any[]>([
+    {
+      id: '1',
+      Chinese: '修改权限',
+      English: 'Modify permissions',
+      disabled: true
+    },
+    {
+      id: '2',
+      Chinese: '用户',
+      English: 'User',
+      disabled: true,
+      children: [
+        {
+          id: '2-1',
+          disabled: true,
+          Chinese: '修改用户信息',
+          English: 'Modifying User Information',
+          value: 'modifyingUserInformation'
+        }
+      ]
+    },
+    {
+      id: '3',
+      Chinese: '消息',
+      English: 'Message',
+      disabled: true,
+      children: [
+        {
+          id: '3-1',
+          disabled: true,
+          English: 'System announcement',
+          Chinese: '系统公告',
+          value: 'systemAnnouncement'
+        },
+        {
+          id: '3-2',
+          disabled: true,
+          English: 'Important notice',
+          Chinese: '重要通知',
+          value: 'importantNotice',
+          children: [
+            {
+              id: '3-2-1',
+              disabled: true,
+              English: 'System Users',
+              Chinese: '系统内用户',
+              value: 'importantSystemUsers'
+            },
+            {
+              id: '3-2-2',
+              disabled: true,
+              English: 'Customize recipient',
+              Chinese: '自定义接收人',
+              value: 'importantNoticeCustom'
+            }
+          ]
+        }
+      ]
+    },
+    {
+      id: '4',
+      Chinese: '壁纸',
+      English: 'Wallpaper',
+      disabled: true,
+      children: [
+        {
+          id: '4-1',
+          Chinese: '在线壁纸',
+          English: 'Online wallpaper',
+          disabled: true,
+          value: 'onlineWallpaper',
+          children: [
+            {
+              id: '4-1-1',
+              Chinese: '信息修改',
+              English: 'Modify information',
+              value: 'onlineWallpaperModify',
+              disabled: true,
+              children: [
+                {
+                  id: '4-1-1-1',
+                  disabled: true,
+                  value: 'onlineWallpaperModifyTitle',
+                  English: 'Title',
+                  Chinese: '标题'
+                },
+                {
+                  id: '4-1-1-2',
+                  disabled: true,
+                  value: 'onlineWallpaperModifyLabel',
+                  English: 'Label',
+                  Chinese: '标签'
+                },
+                {
+                  id: '4-1-1-3',
+                  disabled: true,
+                  value: 'onlineWallpaperModifyState',
+                  English: 'State',
+                  Chinese: '状态'
+                },
+                {
+                  id: '4-1-1-4',
+                  disabled: true,
+                  value: 'onlineWallpaperModifyLocation',
+                  English: 'Storage location',
+                  Chinese: '存储位置'
+                }
+              ]
+            }
+          ]
+        },
+        {
+          id: '4-2',
+          Chinese: '未在线壁纸',
+          English: 'Not online wallpaper',
+          value: 'notOnlineWallpaper',
+          disabled: true,
+          children: [
+            {
+              id: '4-2-1',
+              Chinese: '信息修改',
+              English: 'Modify information',
+              value: 'notOnlineWallpaperModify',
+              disabled: true,
+              children: [
+                {
+                  id: '4-2-1-1',
+                  disabled: true,
+                  value: 'notOnlineWallpaperModifyTitle',
+                  English: 'Title',
+                  Chinese: '标题'
+                },
+                {
+                  id: '4-2-1-2',
+                  disabled: true,
+                  value: 'notOnlineWallpaperModifyLabel',
+                  English: 'Label',
+                  Chinese: '标签'
+                },
+                {
+                  id: '4-2-1-3',
+                  disabled: true,
+                  value: 'notOnlineWallpaperModifyState',
+                  English: 'State',
+                  Chinese: '状态'
+                },
+                {
+                  id: '4-2-1-4',
+                  disabled: true,
+                  value: 'notOnlineWallpaperModifyLocation',
+                  English: 'Storage location',
+                  Chinese: '存储位置'
+                }
+              ]
+            }
+          ]
+        },
+        {
+          id: '4-3',
+          Chinese: '批量操作',
+          English: 'Batch operation',
+          disabled: true,
+          children: [
+            {
+              id: '4-3-1',
+              disabled: true,
+              English: 'Batch upload',
+              value: 'wallpaperUpload',
+              Chinese: '批量上传'
+            },
+            {
+              id: '4-3-2',
+              disabled: true,
+              English: 'Batch download',
+              value: 'wallpaperDownload',
+              Chinese: '批量下载'
+            }
+          ]
+        }
+      ]
+    },
+    {
+      id: '5',
+      Chinese: '其他',
+      English: 'Other',
+      disabled: true,
+      children: [
+        {
+          id: '5-1',
+          Chinese: '操作日志',
+          English: 'Operation log',
+          disabled: true,
+          children: [
+            {
+              id: '5-1-1',
+              Chinese: '查看',
+              English: 'To view',
+              value: 'logView',
+              disabled: true
+            },
+            {
+              id: '5-1-2',
+              Chinese: '导出',
+              English: 'Export',
+              value: 'logExport',
+              disabled: true
+            }
+          ]
+        }
+      ]
+    }
+  ]);
+const permissionsReturn = reactive<any>({
+  id: '',
+  uuid: ''
+})
+const permissionsLoading = ref<boolean>(false);
 /**
  * 方法区
  */
@@ -252,20 +473,9 @@ const access = ref<any[]>([]);
 const init = () => {
   let m = date.getMonth();
   let d = date.getDate();
-  let wk = date.getDay()
   time.value.push(date.getFullYear()+'-'+(m+1<10?'0'+(m+1):m+1)+'-'+(d+1<10?'0'+d:d));
   time.value.push(monthEnglishFormat[m]+' '+(d+1<10?'0'+d:d)+','+date.getFullYear());
-  let curretMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-  let curretMonthDayCount = curretMonth.getDate();
-  let today = d+1<10?'0'+d:d;
-  let tomorrow = d+1>curretMonthDayCount? '01':d+1<10?'0'+(d+1):d+1;
-  let afterTomorrow = d+2>curretMonthDayCount? '02':d+2>curretMonthDayCount? '01':d+2<10?'0'+(d+2):d+2;
-  calendar.value = [];
-  calendar.value.push({English: [today,monthEnglishFormat[m],weekEnglishFormat[wk]],Chinese: [today,monthChineseFormat[m],weekChineseFormat[wk]]});
-  calendar.value.push({English: [tomorrow,monthEnglishFormat[tomorrow==='01'?m+1:m],weekEnglishFormat[wk+1>6?0:wk+1]],Chinese: [tomorrow,monthChineseFormat[tomorrow==='01'?m+1:m],weekChineseFormat[wk+1>6?0:wk+1]]});
-  calendar.value.push({English: [afterTomorrow,monthEnglishFormat[afterTomorrow==='01'?m+1:m],weekEnglishFormat[wk+1>6?1:wk+2>6?0:wk+2]],Chinese: [afterTomorrow,monthChineseFormat[afterTomorrow==='01'?m+1:m],weekChineseFormat[wk+1>6?1:wk+2>6?0:wk+2]]});
 }
-init();
 const handleCommand = (command: number) => {
   $http.get('/L/language',{
     params:{
@@ -275,15 +485,31 @@ const handleCommand = (command: number) => {
   }).then((res:any)=>{
     if (res.data){
       modifyLanguage(command);
+      if(command===1){
+        permissionsProps.label='English';
+        data.option1.series[0].name = 'Wallpaper number';
+        data.option1.series[0].data[0]['name'] = 'Online';
+        data.option1.series[0].data[1]['name'] = 'Not online';
+      }else{
+        permissionsProps.label='Chinese';
+        data.option1.series[0].name = '壁纸数量';
+        data.option1.series[0].data[0]['name'] = '在线';
+        data.option1.series[0].data[1]['name'] = '不在线';
+      }
+      myCharts.value.setOption(data.option1);
     }else{
       ElMessage.error(language===1?'Failed. Please try again':'失败,请重新尝试');
     }
   });
-
 }
-const handleCommand2 = (command: number) => {
-  console.log(command);
-  console.log(userInformation.value,'userInformation');
+const adminHandleCommand = (command: number,id: number,uuid: string) => {
+  permissionsLoading.value = true;
+  permissionsDialog.value = true;
+  userPermissions.value['changePermissions']===1?permissionsProps.disabled='disabled2':permissionsProps.disabled='disabled';
+  language.value===1?permissionsProps.label = 'English':permissionsProps.label = 'Chinese';
+  permissionsReturn.id = id;
+  permissionsReturn.uuid = userInformation.value['userId'];
+  gainPermissions(uuid);
 }
 const adminFocus = (val:number) => {
   administratorList.value[adminIsFocus.value]['isFocus'] = false;
@@ -340,7 +566,7 @@ const obtainAccess = (day:number) => {
       limit: day
     }
   }).then((res:any)=>{
-    access.value = res.data.reverse();
+    access.value = res.data;
     data.option2.xAxis.data = [];
     data.option2.series[0].data = [];
     for (let i =0;i<7;i++){
@@ -350,12 +576,81 @@ const obtainAccess = (day:number) => {
     myCharts2.value.setOption(data.option2);
   });
 }
+const adminList = () => {
+  $http.get('/admin/c896d9988afd44939906b45e8703df3a',{
+    params:{
+      identity:0,
+      uuid:$cookies.get('uuid'),
+      page: 1,
+      limit: 10
+    }
+  }).then((res:any)=>{
+    administratorList.value= res.data['data'];
+    administratorList.value.forEach((item:any)=>{
+      item['isFocus'] = false
+    });
+    administratorList.value[0]['isFocus'] = true;
+  });
+}
+const permissionsClick = () => {
+  let arr = permissionsTree.value.getCheckedNodes();
+  let arr2 = permissionsTree.value.getHalfCheckedNodes();
+  arr.forEach((item:any)=>{
+    if (item['value'] !== undefined){
+      permissionsReturn[item['value']] = 1;
+    }
+  });
+  arr2.forEach((item:any)=>{
+    if (item['value'] !== undefined){
+      permissionsReturn[item['value']] = 1;
+    }
+  });
+  $http.post("admin/PermissionsModify",permissionsReturn).then((res:any)=>{
+    if (res.data){
+      ElMessage({
+        message: language===1?'Successful':'成功',
+        type: 'success',
+      });
+      permissionsDialog.value=false;
+    }
+  });
+}
+const gainPermissions = (uuid:string) => {
+  $http.get('/admin/PermissionsView',{
+    params:{
+      uuid:uuid
+    }
+  }).then((res:any)=>{
+    let arr = [];
+    if (res.data[0]['changePermissions']===1) arr.push('1');
+    if (res.data[0]['modifyingUserInformation']===1) arr.push('2-1');
+    if (res.data[0]['systemAnnouncement']===1) arr.push('3-1');
+    if (res.data[0]['importantSystemUsers']===1) arr.push('3-2-1');
+    if (res.data[0]['importantNoticeCustom']===1) arr.push('3-2-2');
+    if (res.data[0]['onlineWallpaperModifyTitle']===1) arr.push('4-1-1-1');
+    if (res.data[0]['onlineWallpaperModifyLabel']===1) arr.push('4-1-1-2');
+    if (res.data[0]['onlineWallpaperModifyState']===1) arr.push('4-1-1-3');
+    if (res.data[0]['onlineWallpaperModifyLocation']===1) arr.push('4-1-1-4');
+    if (res.data[0]['notOnlineWallpaperModifyTitle']===1) arr.push('4-2-1-1');
+    if (res.data[0]['notOnlineWallpaperModifyLabel']===1) arr.push('4-2-1-2');
+    if (res.data[0]['notOnlineWallpaperModifyState']===1) arr.push('4-2-1-3');
+    if (res.data[0]['notOnlineWallpaperModifyLocation']===1) arr.push('4-2-1-4');
+    if (res.data[0]['wallpaperUpload']===1) arr.push('4-3-1');
+    if (res.data[0]['wallpaperDownload']===1) arr.push('4-3-2');
+    if (res.data[0]['logView']===1) arr.push('5-1-1');
+    if (res.data[0]['logExport']===1) arr.push('5-1-2');
+    permissionsTree.value.setCheckedKeys(arr);
+    permissionsLoading.value = false;
+  })
+}
 onMounted(()=>{
   if ($cookies.get('uuid')===null){
     modifyIsLogTo(false);
   }else{
+    init();
     wallpaperChart();
     obtainAccess(30);
+    adminList();
   }
 });
 </script>
