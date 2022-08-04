@@ -445,7 +445,13 @@ const batchUpload = reactive<uploadInterface>({
   }
   const updateChange = (file: any, fileList: any) => {
     if (!/\.(jpg|png|jpeg|gif|webp)$/.test(file.name)) {
-      ElMessage.error('文件格式错误');
+      ElMessage.error(language.value===1?'File format error':'文件格式错误');
+      fileList.splice(fileList.length-1, 1);
+      return;
+    }
+    console.log(file);
+    if (file.size > 5242880) {
+      ElMessage.error(file.name+(language.value===1?' Greater than':' 大于')+'5MB');
       fileList.splice(fileList.length-1, 1);
       return;
     }

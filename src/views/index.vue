@@ -1,5 +1,5 @@
 <template>
-  <div class="background" :style="{width:width+'px',height:height+'px'}">
+  <div v-if="isPc" class="background" :style="{width:width+'px',height:height+'px'}">
     <div v-if="isLogTo===1" class="system">
     <span class="menu">
       <div style="width: 100%;margin-top: 100%;">
@@ -76,6 +76,9 @@
     </span>
     </div>
   </div>
+  <div v-else style="width: 100%;height: 100%;text-align: center;padding-top: 30px;font-size: 20px">
+    <b style="color: #2c95d4" @click="isPc=!isPc">页面暂不适配移动端，点我强行访问</b>
+  </div>
 </template>
 <script setup lang="ts">
 import { inject, onMounted, provide, reactive, readonly, ref } from "vue";
@@ -107,6 +110,7 @@ let options = ref(0);
 let width = ref<number>(window.innerWidth<1536?1536:window.innerWidth);
 let height = ref<number>(window.innerHeight<754?754:window.innerHeight);
 let language = ref(1);
+const isPc = ref<boolean>(true);
 const userInformation = ref<any>({});
 const isLogTo = ref<number>(-1);
 const ruleFormRef = ref<FormInstance>();
@@ -247,6 +251,9 @@ const gainPermissions = () => {
   })
 }
 onMounted(()=>{
+  if ((navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i))) {
+    isPc.value = false;
+  }
   if ($cookies.get('uuid')!==null){
     userInformationQuery();
     gainPermissions();

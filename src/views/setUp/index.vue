@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import { inject, onMounted, reactive, ref } from "vue";
+import { inject, onMounted, reactive } from "vue";
 import fileDownload from 'js-file-download';
 import router from "@/router";
 /**
