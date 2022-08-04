@@ -1,24 +1,16 @@
 <template>
-  <div id="app">
+  <div id="app" v-cloak>
     <perfect-scrollbar>
       <keep-alive>
-        <router-view class="content" v-if="$route.meta.keepAlive || isRouterActive" />
+        <router-view class="content"/>
       </keep-alive>
     </perfect-scrollbar>
   </div>
 </template>
 <script setup lang="ts">
-import { getCurrentInstance, nextTick, provide, ref } from "vue";
+import { getCurrentInstance, provide } from "vue";
 const { proxy } = getCurrentInstance() as any;
-const isRouterActive = ref(true);
 provide('proxy',proxy);
-
-provide('reload', () => {
-  isRouterActive.value = false
-  nextTick(() => {
-    isRouterActive.value = true
-  })
-})
 </script>
 <style lang="less">
 #app {
@@ -32,5 +24,8 @@ provide('reload', () => {
   .ps{
     height: 100%;
   }
+}
+[v-cloak]{
+  display: none;
 }
 </style>

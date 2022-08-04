@@ -8,7 +8,7 @@
         </div>
         <div class="body-left-lower">
           <perfect-scrollbar>
-            <div class="body-left-list" :class="messageType===1?'pitch-on':'uncheck'" @click="choose(1)">{{language===1?'System announcement':'系统公告'}}</div>
+            <div class="body-left-list" :class="messageType===1?'pitch-on':'uncheck'" @click="choose(1)">{{language===1?'Announcement':'系统公告'}}</div>
             <div class="body-left-list" :class="messageType===2?'pitch-on':'uncheck'" @click="choose(2)">{{language===1?'Important notice':'重要通知'}}</div>
           </perfect-scrollbar>
         </div>
@@ -109,7 +109,8 @@
               </perfect-scrollbar>
             </span>
             <span v-show="isAnnouncement" class="announcementPreview">
-              <perfect-scrollbar>
+              <div style="width: 100%;height: 90%;margin-top: 3%">
+                <perfect-scrollbar>
                 <div style="font-size: 20px;width: 96%;margin: 10px 0 0 2%;text-align: center"><b>{{contentAnnouncement.title}}</b></div>
                 <div style="width: 100%;" v-for="(item,i) in contentAnnouncement.content" :key="i">
                   <div class="preview-content" :style="{'color': item['color'],'text-align': item['align'],'font-size': item['fontSize']+'px'}" v-if="item['type']===0">
@@ -123,6 +124,7 @@
                   </div>
                 </div>
               </perfect-scrollbar>
+              </div>
             </span>
          </div>
         <div v-else-if="messageType===2" class="body-right-Project-2">
@@ -148,6 +150,7 @@
               <sapn style="width: 10%;text-align: center">
                 <el-tooltip :content="importantParameter.acceptType?language===1?'Switching Custom':'切换自定义':language===1?'Switching system':'切换系统内'" :disabled="importantParameter.disabled" placement="top">
                   <el-switch
+                    :disabled="importantParameter.isSwitch"
                     v-model="importantParameter.acceptType"
                     style="--el-switch-on-color: #13ce66; --el-switch-off-color: #2C95D4"
                   />
@@ -172,7 +175,8 @@
               <el-input style="margin-left: 20px;width: 100px;" maxlength="4" v-model="importantYzmText" :placeholder="language===1?'Please input':'请输入'"></el-input>
             </span>
             <span style="width: 50%;text-align: right">
-              <el-button type="primary" :disabled="userPermissions && userPermissions['importantNotice']===0" @click="importantSend">{{language===1?'Send':'发送'}}</el-button>
+              {{language===1?'Remaining number':'剩余次数'}}:{{importantParameter['messageNumber']}}
+              <el-button type="primary" :disabled="userPermissions && userPermissions['importantNotice']===0 || importantParameter['messageNumber']===0 || importantParameter['deliveryStatus']" @click="importantSend">{{language===1?'Send':'发送'}}</el-button>
             </span>
           </div>
         </div>
@@ -254,11 +258,14 @@ interface contentAnnouncementInterface{
   content: any[]
 }
 interface importantParameterInterface{
+  deliveryStatus: boolean,
+  messageNumber: number,
   disabled: boolean,
   acceptType: boolean,
   system: string[],
   custom: string,
-  content: string
+  content: string,
+  isSwitch: boolean
 }
 /**
  * 变量区
@@ -291,11 +298,14 @@ const upload = ref<any>(null);
 const drawerAnnouncement = ref(false);
 // 重要通知
 const importantParameter = reactive<importantParameterInterface>({
+  deliveryStatus: false,
+  messageNumber: 0,
   disabled: false,
   acceptType: true,
   system: [],
   custom: '',
-  content: ''
+  content: '',
+  isSwitch: false
 });
 const importantYzm = reactive({
   img:'',
@@ -318,6 +328,7 @@ const choose = (num:number) => {
     case 2:
       if(userPermissions.value['importantSystemUsers']===0 || userPermissions.value['importantNoticeCustom']===0){
         if (userPermissions.value['importantNoticeCustom']===1) importantParameter.acceptType = false;
+        importantParameter.isSwitch = true;
       }
       dropDown.value = false;
       importantInit();
@@ -332,7 +343,15 @@ const base64 = (file:any, callBack: (data: string | ArrayBuffer | null) => void)
     callBack(reader.result);
   }
 }
-
+const gainPermissions = () => {
+  $http.get('/admin/PermissionsView',{
+    params:{
+      uuid:$cookies.get('uuid')
+    }
+  }).then((res:any)=>{
+    importantParameter.messageNumber = res.data[0]['messageNumber'];
+  })
+}
 // 系统公告
 const handleCommand = (command: number, val: number) => {
   current.value = val;
@@ -403,11 +422,13 @@ const importantYZM = () => {
   })
 }
 const importantSend = () =>{
+  importantParameter.deliveryStatus = true;
   if (importantYzmText.value.toLowerCase() !== importantYzm.text.toLowerCase()){
     ElMessage({
       message: language.value===1?'Verification code error, please enter again':'验证码错误,请重新输入',
       type: 'warning',
     });
+    importantParameter.deliveryStatus = false;
     importantYZM();
   }else{
     let data:string[] = [];
@@ -416,6 +437,7 @@ const importantSend = () =>{
         message: language.value===1?'The content cannot be empty':'内容不能为空',
         type: 'warning',
       });
+      importantParameter.deliveryStatus = false;
       return;
     }
     if (importantParameter.acceptType){
@@ -424,6 +446,7 @@ const importantSend = () =>{
           message: language.value===1?'The recipient cannot be blank':'收件人不能为空',
           type: 'warning',
         });
+        importantParameter.deliveryStatus = false;
         return;
       }else{
         data = importantParameter.system;
@@ -434,6 +457,7 @@ const importantSend = () =>{
           message: language.value===1?'Email format error':'电子邮件格式错误',
           type: 'warning',
         });
+        importantParameter.deliveryStatus = false;
         return;
       }else{
         data.push(importantParameter.custom)
@@ -449,12 +473,14 @@ const importantSend = () =>{
           message: language.value===1?'Send a success':'发送成功',
           type: 'success',
         });
+        gainPermissions();
       }else{
         ElMessage({
           message: language.value===1?'Send failure':'发送失败',
           type: 'warning',
         });
       }
+      importantParameter.deliveryStatus = false;
     });
   }
 }
@@ -478,9 +504,10 @@ const obtainUserList = () => {
 // 用户消息
 onMounted(()=>{
   if ($cookies.get('uuid')===null){
-    modifyIsLogTo(false);
+    modifyIsLogTo(0);
   }else{
     obtainUserList();
+    gainPermissions();
   }
 });
 </script>
@@ -571,7 +598,7 @@ onMounted(()=>{
     }
   }
   .body-right{
-    width: 800px;
+    width: 900px;
     height: 100%;
     margin-left: 30px;
     border-radius: 20px;
@@ -583,7 +610,7 @@ onMounted(()=>{
       display: flex;
       overflow: hidden;
       .announcementSetUp{
-        width: 500px;
+        width: 450px;
         padding-top: 10px;
         height: 90%;
         border-radius: 20px;

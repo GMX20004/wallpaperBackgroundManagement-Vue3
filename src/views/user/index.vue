@@ -231,7 +231,7 @@ const modifySubmit = () => {
 }
 onMounted(()=>{
   if ($cookies.get('uuid')===null){
-    modifyIsLogTo(false);
+    modifyIsLogTo(0);
   }else{
     getUserList();
   }

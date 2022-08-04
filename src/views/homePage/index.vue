@@ -46,11 +46,11 @@
             <perfect-scrollbar>
               <div v-for="(item,i) in administratorList" tabindex="-1" class="administrator-list" :key="i" @focus="adminFocus(i)" :class="[item['isFocus']?'administratorColor':'']">
               <span style="width: 40px;margin-left: 0"><el-avatar style="width: 40px;height: 40px;margin: 10px 0 0 10px" :src="headPortrait+item['headPortrait']"/></span>
-              <span style="width: 100px;"><b>{{item['name']}}</b></span>
-              <span style="width: 200px;color: #8d8d8d">{{item['email']}}</span>
-              <span style="width: 50px;color: #8d8d8d">{{item['sex']}}</span>
-              <span style="width: 220px;color: #8d8d8d">加入时间：{{item['creationTime']}}</span>
-              <span style="width: 30px;">
+              <span style="width: 10%;"><b>{{item['name']}}</b></span>
+              <span style="width: 23%;color: #8d8d8d">{{item['email']}}</span>
+              <span style="width: 5%;color: #8d8d8d">{{item['sex']}}</span>
+              <span style="width: 33%;color: #8d8d8d">加入时间：{{item['creationTime']}}</span>
+              <span style="width: 5%;">
                 <el-dropdown trigger="click" @command="(command)=>adminHandleCommand(command,item['id'],item['userId'])">
                     <svg style="margin-top: 15px;cursor:pointer;" t="1657169528823" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2250" width="30" height="30">
                       <path d="M223.962372 607.897867c-52.980346 0-95.983874-43.003528-95.983874-95.983874s43.003528-95.983874 95.983874-95.983874 95.983874 43.003528 95.983874 95.983874S276.942718 607.897867 223.962372 607.897867z" p-id="2251"></path>
@@ -645,7 +645,7 @@ const gainPermissions = (uuid:string) => {
 }
 onMounted(()=>{
   if ($cookies.get('uuid')===null){
-    modifyIsLogTo(false);
+    modifyIsLogTo(0);
   }else{
     init();
     wallpaperChart();
@@ -712,7 +712,7 @@ onMounted(()=>{
           height: 100%;
         }
         .administrator-list{
-          width: 740px;
+          width: 100%;
           height: 60px;
           border-radius: 50px;
           display: flex;

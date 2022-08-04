@@ -57,9 +57,21 @@
           :on-preview="handlePictureCardPreview"
         >
           <el-icon><Plus /></el-icon>
+          <template #file="{ file }">
+            <img class="el-upload-list__item-thumbnail" :src="file.url" alt="" />
+            <el-progress v-if="batchUpload.isUpload && file===batchUpload.fileList[0]" type="circle" :percentage="batchUpload.percentage" />
+            <span v-if="!batchUpload.isUpload" class="el-upload-list__item-actions">
+              <span class="el-upload-list__item-preview" @click="handlePictureCardPreview(file)">
+                <el-icon><zoom-in /></el-icon>
+              </span>
+              <span class="el-upload-list__item-delete" @click="handleRemove(file)">
+                <el-icon><Delete /></el-icon>
+              </span>
+            </span>
+          </template>
         </el-upload>
         <div style="width: 80%;margin-left: 10%;text-align: center">
-          <el-button style="width: 80%;" type="success" @click="upload" :disabled="userPermissions && userPermissions['wallpaperUpload']===0">{{language===1?'Upload':'上传'}}</el-button>
+          <el-button v-if="!batchUpload.isUpload" style="width: 80%;" type="success" @click="upload" :disabled="userPermissions && userPermissions['wallpaperUpload']===0">{{language===1?'Upload':'上传'}}</el-button>
         </div>
       </div>
     </div>
@@ -172,7 +184,9 @@ interface wallpaperInterface{
 interface uploadInterface{
   fileList: any[],
   dialogImageUrl: string,
-  dialogVisible: boolean
+  dialogVisible: boolean,
+  isUpload: boolean,
+  percentage: any
 }
 /**
  * 变量区
@@ -185,6 +199,7 @@ const { $cookies } = proxy as any;
 const userPermissions:any = inject('userPermissions');
 let language:any = inject('language');
 const modifyIsLogTo:any = inject('modifyIsLogTo');
+const userInformation:any = inject('userInformation');
 let Select = ref<number>(0);
 const dialog = ref<boolean>(false);
 const picture = reactive<pictureInterface>({
@@ -245,7 +260,9 @@ const notOnline = reactive<wallpaperInterface>({
 const batchUpload = reactive<uploadInterface>({
   fileList:[],
   dialogImageUrl: '',
-  dialogVisible:false
+  dialogVisible:false,
+  isUpload: false,
+  percentage: 0,
 })
 /**
  * 方法区
@@ -356,7 +373,7 @@ const batchUpload = reactive<uploadInterface>({
       setTimeout(() => {
         online.form.page++;
         onlineWallpaperQuery();
-      }, 2000);
+      }, 1000);
     }
   }
   const onlineWallpaperQuery = () => {
@@ -373,6 +390,9 @@ const batchUpload = reactive<uploadInterface>({
           temporary = [];
         }
       }
+      if (temporary.length !== 0){
+        online.wallpaperList.push(temporary);
+      }
       online.total = res.data['total'];
       online.isReturn = true;
     });
@@ -386,7 +406,7 @@ const batchUpload = reactive<uploadInterface>({
       setTimeout(() => {
         notOnline.form.page++;
         notOnlineWallpaperQuery();
-      }, 2000);
+      }, 1000);
     }
   }
   const notOnlineWallpaperQuery = () => {
@@ -403,6 +423,9 @@ const batchUpload = reactive<uploadInterface>({
           temporary = [];
         }
       }
+      if (temporary.length !== 0){
+        notOnline.wallpaperList.push(temporary);
+      }
       notOnline.total = res.data['total'];
       notOnline.isReturn = true;
     });
@@ -412,6 +435,14 @@ const batchUpload = reactive<uploadInterface>({
     batchUpload.dialogImageUrl = uploadFile['url'] as string;
     batchUpload.dialogVisible = true;
   }
+  const handleRemove = (file: any) => {
+    for(let i=0;i<batchUpload.fileList.length;i++){
+      if (file === batchUpload.fileList[i]){
+        batchUpload.fileList.splice(i,1);
+        return;
+      }
+    }
+  }
   const updateChange = (file: any, fileList: any) => {
     if (!/\.(jpg|png|jpeg|gif|webp)$/.test(file.name)) {
       ElMessage.error('文件格式错误');
@@ -419,14 +450,40 @@ const batchUpload = reactive<uploadInterface>({
       return;
     }
   }
-  const upload = ()=>{
-      // let fileFormData = new FormData();
-      // fileFormData.append("file", file.file);
-    batchUpload.fileList[0].onProgress({percent: 10})
+  const  upload = async ()=>{
+    batchUpload.isUpload = true;
+    while (batchUpload.fileList.length!==0){
+      batchUpload.percentage = 0;
+      let fileFormData = new FormData();
+      fileFormData.append("userId", userInformation.value['id']);
+      fileFormData.append("file", batchUpload.fileList[0]['raw']);
+      fileFormData.append('size', batchUpload.fileList[0]['size']);
+      await $http.post('/L/UploadWallpaper',fileFormData,{
+        onUploadProgress:function(progressEvent:any){
+          batchUpload.percentage = (progressEvent['loaded']/progressEvent['total']*100).toFixed(1);
+        }
+      }).then((res:any)=>{
+        if (res.data['state']){
+          if (notOnline.disabled){
+            if(notOnline.wallpaperList[notOnline.wallpaperList.length-1].length<6){
+              notOnline.wallpaperList[notOnline.wallpaperList.length-1].push(res.data['data']);
+            }else{
+              notOnline.wallpaperList.push([res.data['data']]);
+            }
+          }
+        }
+      }).catch(()=>{
+        ElMessage.error(language.value===1?'Upload failed':'上传失败');
+        batchUpload.isUpload = false;
+        return;
+      })
+      batchUpload.fileList.splice(0,1);
+    }
+    batchUpload.isUpload = false;
   }
   onMounted(()=>{
     if ($cookies.get('uuid')===null){
-      modifyIsLogTo(false);
+      modifyIsLogTo(0);
     }
     init();
   })
@@ -510,5 +567,6 @@ const batchUpload = reactive<uploadInterface>({
     }
   }
 }
+
 </style>
 
