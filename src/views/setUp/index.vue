@@ -4,7 +4,7 @@
       <el-button style="width: 100px;margin-left: 50px" type="primary" round @click="viewLogClick">{{language===1?'View log':'查看日志'}}</el-button>
       <el-button style="width: 100px;margin-left: 50px" type="danger" round @click="exitClick">{{language===1?'Exit':'退出'}}</el-button>
     </perfect-scrollbar>
-    <el-dialog v-model="log.dialogVisible" v-loading="log.loading" title="Tips" style="width: 100%">
+    <el-dialog v-model="log.dialogVisible" v-loading="log.loading" title="Tips" width="1000px">
       <el-table :data="log.tableData" stripe style="width: 100%;" height="300px">
         <el-table-column prop="userId" label="用户编号" align="center" width="100" />
         <el-table-column prop="action" label="操作" align="center" />
@@ -25,7 +25,6 @@
 
 <script setup lang="ts">
 import { inject, onMounted, reactive } from "vue";
-import fileDownload from 'js-file-download';
 import router from "@/router";
 /**
  * 接口区
@@ -44,6 +43,7 @@ interface logInterface{
 const proxy = inject("proxy");
 const { $cookies } = proxy as any;
 const { $http } = proxy as any;
+const { $file } = proxy as any;
 let language:any = inject('language');
 const modifyIsLogTo:any = inject('modifyIsLogTo');
 // 日志
@@ -94,7 +94,7 @@ const logExport = () => {
       uuid:$cookies.get('uuid')
     }
   }).then((res:any)=>{
-    fileDownload(res.data, '导出日志.xls');
+    $file(res.data, '导出日志.xls');
   });
 }
 /**

@@ -1,10 +1,6 @@
 <template>
-  <div id="app" v-cloak>
-    <perfect-scrollbar>
-      <keep-alive>
-        <router-view class="content"/>
-      </keep-alive>
-    </perfect-scrollbar>
+  <div id="app">
+    <router-view />
   </div>
 </template>
 <script setup lang="ts">
@@ -20,10 +16,7 @@ provide('proxy',proxy);
   margin-top: 0px;
   height: 100%;
   width: 100%;
-  position: absolute;
-  .ps{
-    height: 100%;
-  }
+  overflow: auto;
 }
 [v-cloak]{
   display: none;

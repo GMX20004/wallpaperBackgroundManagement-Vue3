@@ -33,7 +33,7 @@ const routes: Array<RouteRecordRaw> = [
         path: '/setUp',
         name: 'setUp',
         component: () => import('@/views/setUp/index.vue'),
-        meta: { keepAlive: false}
+        meta: { keepAlive: true}
       }
     ]
   }

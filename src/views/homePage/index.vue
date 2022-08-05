@@ -125,7 +125,7 @@
           </div>
         </span>
       </div>
-      <el-dialog v-model="permissionsDialog" v-loading="permissionsLoading" :title="language===1?'Rights management':'权限管理'" width="30%">
+      <el-dialog v-model="permissionsDialog" v-loading="permissionsLoading" :title="language===1?'Rights management':'权限管理'" width="500px">
         <el-tree
           ref="permissionsTree"
           :data="permissionsData"

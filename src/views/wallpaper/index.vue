@@ -76,7 +76,7 @@
       </div>
     </div>
     <el-image-viewer v-if="batchUpload.dialogVisible" @close="batchUpload.dialogVisible=false" :url-list="[batchUpload.dialogImageUrl]"/>
-    <el-dialog v-model="dialog" v-loading="picture.loading" :before-close="exitReset" width="60%">
+    <el-dialog v-model="dialog" v-loading="picture.loading" :before-close="exitReset" width="1000px">
       <div class="dialog-body">
         <span class="dialog-body-left">
           <el-image

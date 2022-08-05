@@ -71,7 +71,7 @@
           </div>
         </span>
       </div>
-      <el-dialog v-model="dialogVisible" :title="language===1?'Modify information':'修改信息'" width="50%">
+      <el-dialog v-model="dialogVisible" :title="language===1?'Modify information':'修改信息'" width="700px">
         <div style="height: 100px;width: 100%;text-align: center">
           <el-upload
             :auto-upload="false"

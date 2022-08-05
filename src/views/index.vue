@@ -42,7 +42,7 @@
               <component :is="Component"/>
             </keep-alive>
           </router-view>
-          <router-view v-show="!$route.meta['keepAlive']" />
+          <router-view v-if="!$route.meta['keepAlive']" />
         </el-config-provider>
       </div>
     </span>
@@ -108,7 +108,7 @@ const { $imgUrl } = proxy as any;
 const router = useRouter();
 let options = ref(0);
 let width = ref<number>(window.innerWidth<1536?1536:window.innerWidth);
-let height = ref<number>(window.innerHeight<754?754:window.innerHeight);
+let height = ref<number>(window.innerHeight<754?754:window.innerHeight-1);
 let language = ref(1);
 const isPc = ref<boolean>(true);
 const userInformation = ref<any>({});
@@ -286,21 +286,17 @@ window.onresize = function(){
   if (window.innerHeight<754){
     height.value = 754;
   }else{
-    height.value = window.innerHeight;
+    height.value = window.innerHeight-1;
   }
-  router.go(0);
-  // reload();
 }
 </script>
 
 <style scoped lang="scss">
 .background{
   background-color: #dddfeb;
-  overflow: hidden;
-  display: inline-block;
-  position: absolute;
+  display: flex;
   .system{
-    margin: 5% 0 0 8%;
+    margin: auto;
     width: 84%;
     height: 80%;
     background-color: #eff2f7;

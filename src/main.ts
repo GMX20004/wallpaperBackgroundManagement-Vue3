@@ -12,6 +12,7 @@ import '@/assets/imgs';
 import vue3SeamlessScroll from "vue3-seamless-scroll";
 import PerfectScrollbar from 'vue3-perfect-scrollbar';
 import 'vue3-perfect-scrollbar/dist/vue3-perfect-scrollbar.css';
+import fileDownload from "js-file-download";
 axios.defaults.timeout = 5000;
 axios.defaults.baseURL = 'http://101.43.88.137:9081';
 const imgUrl = 'http://101.43.88.137:9081/image/';
@@ -22,6 +23,7 @@ app.config.globalProperties.$cookies  = VueCookies;
 app.config.globalProperties.$echarts = echarts;
 app.config.globalProperties.$http = axios;
 app.config.globalProperties.$imgUrl = imgUrl;
+app.config.globalProperties.$file = fileDownload;
 app.use(ElementPlus);
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)
