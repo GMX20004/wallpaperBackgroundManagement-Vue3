@@ -24,7 +24,11 @@
 </template>
 
 <script setup lang="ts">
-import { inject, onMounted, reactive } from "vue";
+import {
+  inject,
+  onMounted,
+  reactive
+} from "vue";
 import router from "@/router";
 /**
  * 接口区
@@ -97,14 +101,6 @@ const logExport = () => {
     $file(res.data, '导出日志.xls');
   });
 }
-/**
- * 初始化
- */
-onMounted(()=>{
-  if ($cookies.get('uuid')===null){
-    modifyIsLogTo(0);
-  }
-});
 </script>
 
 <style scoped lang="scss">

@@ -101,8 +101,8 @@
                     </el-table>
                     <el-button style="width: 80%;margin: 20px 0 0 10%" @click="contentAdd">{{language===1?'Add':'新增'}}</el-button>
                     <div style="width: 80%;margin: 20px 0 0 10%;text-align: center">
-                      <el-button @click="announcementCancel">{{language===1?'Cancel':'取消'}}</el-button>
-                      <el-button @click="announcementSave" :disabled="userPermissions && userPermissions['systemAnnouncement']===0" type="primary">{{language===1?'Save':'保存'}}</el-button>
+                      <el-button @click="announcementCancel">{{language===1?'Reset':'重置'}}</el-button>
+                      <el-button :disabled="userPermissions && userPermissions['systemAnnouncement']===0" type="primary">{{language===1?'Save':'保存'}}</el-button>
                     </div>
                   </div>
                 </div>
@@ -247,7 +247,12 @@
 </template>
 
 <script setup lang="ts">
-import { inject, onMounted, reactive, ref } from "vue";
+import {
+  inject,
+  onMounted,
+  reactive,
+  ref
+} from "vue";
 import { ElMessage } from "element-plus";
 /**
  * 接口区
@@ -276,7 +281,6 @@ let language:any = inject('language');
 const { $imgUrl } = proxy as any;
 const { $http } = proxy as any;
 const { $cookies } = proxy as any;
-const modifyIsLogTo:any = inject('modifyIsLogTo');
 const userPermissions:any = inject('userPermissions');
 const userInformation:any = inject('userInformation');
 const headPortrait = $imgUrl+'/headPortrait/';
@@ -384,10 +388,9 @@ const contentAdd = () => {
   });
 }
 const announcementCancel = () => {
-  console.log(contentAnnouncement.content);
-}
-const announcementSave = () => {
-  console.log(contentAnnouncement.content);
+  contentAnnouncement.time = [];
+  contentAnnouncement.title = '';
+  contentAnnouncement.content = [];
 }
 const updateChange = (file: any, fileList: any, num: number) => {
   if (!/\.(jpg|png|jpeg|gif|webp)$/.test(file.name)) {
@@ -502,10 +505,13 @@ const obtainUserList = () => {
   })
 }
 // 用户消息
+
+
+/**
+ * 初始化
+ */
 onMounted(()=>{
-  if ($cookies.get('uuid')===null){
-    modifyIsLogTo(0);
-  }else{
+  if ($cookies.get('uuid')!==null){
     obtainUserList();
     gainPermissions();
   }

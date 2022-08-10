@@ -124,7 +124,6 @@ const proxy = inject("proxy");
 const { $imgUrl } = proxy as any;
 const { $http } = proxy as any;
 const { $cookies } = proxy as any;
-const modifyIsLogTo:any = inject('modifyIsLogTo');
 const headPortrait = $imgUrl+'/headPortrait/';
 let language:any = inject('language');
 const userPermissions:any = inject('userPermissions');
@@ -215,7 +214,7 @@ const modifySubmit = () => {
   data.append('userId',userList.value[userIsFocus.value]['id']);
   data.append('name',modifyParameter.name);
   data.append('instructions',modifyParameter.signature);
-  data.append('uuid',userList.value[userIsFocus.value]['userId']);
+  data.append('uuid',$cookies.get('uuid'));
   $http.post('User/userModify',data).then((res:any)=>{
     if (res.data){
       ElMessage({
@@ -230,9 +229,7 @@ const modifySubmit = () => {
   });
 }
 onMounted(()=>{
-  if ($cookies.get('uuid')===null){
-    modifyIsLogTo(0);
-  }else{
+  if ($cookies.get('uuid')!==null){
     getUserList();
   }
 });

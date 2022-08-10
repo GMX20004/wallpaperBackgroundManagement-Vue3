@@ -198,7 +198,6 @@ const { $http } = proxy as any;
 const { $cookies } = proxy as any;
 const userPermissions:any = inject('userPermissions');
 let language:any = inject('language');
-const modifyIsLogTo:any = inject('modifyIsLogTo');
 const userInformation:any = inject('userInformation');
 let Select = ref<number>(0);
 const dialog = ref<boolean>(false);
@@ -449,7 +448,6 @@ const batchUpload = reactive<uploadInterface>({
       fileList.splice(fileList.length-1, 1);
       return;
     }
-    console.log(file);
     if (file.size > 5242880) {
       ElMessage.error(file.name+(language.value===1?' Greater than':' 大于')+'5MB');
       fileList.splice(fileList.length-1, 1);
@@ -488,9 +486,6 @@ const batchUpload = reactive<uploadInterface>({
     batchUpload.isUpload = false;
   }
   onMounted(()=>{
-    if ($cookies.get('uuid')===null){
-      modifyIsLogTo(0);
-    }
     init();
   })
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isPc" class="background" :style="{width:width+'px',height:height+'px'}">
+  <div v-if="isPc" class="background" :style="{height:height}">
     <div v-if="isLogTo===1" class="system">
     <span class="menu">
       <div style="width: 100%;margin-top: 100%;">
@@ -107,8 +107,7 @@ const { $cookies } = proxy as any;
 const { $imgUrl } = proxy as any;
 const router = useRouter();
 let options = ref(0);
-let width = ref<number>(window.innerWidth<1536?1536:window.innerWidth);
-let height = ref<number>(window.innerHeight<754?754:window.innerHeight-1);
+let height = ref<string>(window.innerHeight<700?'700px':'100%');
 let language = ref(1);
 const isPc = ref<boolean>(true);
 const userInformation = ref<any>({});
@@ -135,6 +134,8 @@ const rules  = reactive<FormRules>({
   password:{  validator: validatePass, trigger: 'blur'}
 });
 const userPermissions = ref<any>();
+const timing = ref<any>();
+const cs = ref<number>(0);
 /**
  * 方法区
  */
@@ -212,6 +213,7 @@ const visitorsLogin = () =>{
   userInformationQuery();
 }
 const userInformationQuery = () => {
+  uuidCheck();
   $http.post('/User/userUUID',{
     uuid: $cookies.get('uuid')
   }).then((data:any)=>{
@@ -250,6 +252,14 @@ const gainPermissions = () => {
     userPermissions.value = res.data[0];
   })
 }
+const uuidCheck = () => {
+  timing.value = setInterval(()=>{
+    if ($cookies.get('uuid')===null){
+      isLogTo.value = 0;
+      clearInterval(timing.value);
+    }
+  },8000);
+}
 onMounted(()=>{
   if ((navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i))) {
     isPc.value = false;
@@ -278,27 +288,23 @@ provide('userPermissions',userPermissions);
  * 监视浏览器分辨率变化
  */
 window.onresize = function(){
-  if (window.innerWidth<1536){
-    width.value = 1536;
+  if (window.innerHeight<700){
+    height.value = '700px';
   }else{
-    width.value = window.innerWidth;
-  }
-  if (window.innerHeight<754){
-    height.value = 754;
-  }else{
-    height.value = window.innerHeight-1;
+    height.value = '100%';
   }
 }
 </script>
 
 <style scoped lang="scss">
 .background{
+  overflow: auto;
   background-color: #dddfeb;
   display: flex;
   .system{
     margin: auto;
-    width: 84%;
-    height: 80%;
+    width: 1200px;
+    height: 700px;
     background-color: #eff2f7;
     border-radius: 50px;
     display: flex;

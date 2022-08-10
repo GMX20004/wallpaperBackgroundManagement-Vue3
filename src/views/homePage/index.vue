@@ -144,7 +144,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, inject, reactive, onMounted } from "vue";
+import { ref, inject, reactive, onMounted, onActivated } from "vue";
 import { ElMessage } from "element-plus";
 /**
  * 接口区
@@ -162,7 +162,6 @@ let search = ref('');
 const headPortrait = $imgUrl+'/headPortrait/';
 let language:any = inject('language');
 const modifyLanguage:any = inject('modifyLanguage');
-const modifyIsLogTo:any = inject('modifyIsLogTo');
 const userInformation:any = inject('userInformation');
 const userPermissions:any = inject('userPermissions');
 const date = new Date();
@@ -644,14 +643,14 @@ const gainPermissions = (uuid:string) => {
   })
 }
 onMounted(()=>{
-  if ($cookies.get('uuid')===null){
-    modifyIsLogTo(0);
-  }else{
+  if ($cookies.get('uuid')!==null){
     init();
-    wallpaperChart();
     obtainAccess(30);
     adminList();
   }
+});
+onActivated(()=>{
+  wallpaperChart();
 });
 </script>
 
@@ -661,7 +660,6 @@ onMounted(()=>{
   height: 100%;
   .ps{
     height: 100%;
-    width: 100%;
   }
   .head{
     width: 100%;
@@ -688,7 +686,7 @@ onMounted(()=>{
   }
   .body{
     width: 100%;
-    margin-top: 50px;
+    margin-top: 30px;
     height: calc(100% - 90px);
     display: flex;
     .body-left{
@@ -737,12 +735,12 @@ onMounted(()=>{
       }
       .body-left-hierarchy4{
         width: 100%;
-        height: 250px;
+        height: 210px;
         margin-top: 10px;
         display: flex;
         .calendar{
-          width: 150px;
-          height: 70px;
+          width: 140px;
+          height: 60px;
           border-radius: 20px;
           border: 1px solid #dedede;
           cursor:pointer;
@@ -768,7 +766,7 @@ onMounted(()=>{
     .body-right{
       width: 30%;
       margin-left: 20px;
-      height: 520px;
+      height: 495px;
       background-color: #f3f6fb;
       border-radius: 20px;
       .body-right-hierarchy1{
@@ -777,11 +775,11 @@ onMounted(()=>{
       }
       .body-right-hierarchy2{
         width: 90%;
-        height: 200px;
-        margin: 20px 0 0 5%;
+        height: 150px;
+        margin: 10px 0 0 5%;
         .ps{
           width: 100%;
-          height: 200px;
+          height: 150px;
         }
         .body-right-hierarchy2-arrange{
           width: 100%;
@@ -792,7 +790,7 @@ onMounted(()=>{
       }
       .body-right-hierarchy3{
         width: 90%;
-        height: 150px;
+        height: 190px;
         margin: 20px 0 0 5%;
       }
       .body-right-hierarchy4{

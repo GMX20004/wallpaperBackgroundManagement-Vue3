@@ -16,6 +16,7 @@ provide('proxy',proxy);
   margin-top: 0px;
   height: 100%;
   width: 100%;
+  position:fixed;
   overflow: auto;
 }
 [v-cloak]{
