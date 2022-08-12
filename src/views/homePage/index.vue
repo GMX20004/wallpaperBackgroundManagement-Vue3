@@ -1,10 +1,10 @@
 <template>
   <div class="homePage">
-    <perfect-scrollbar>
+    <el-scrollbar style="height: 100%">
       <div class="head">
         <span>
-          <b>{{language===1?'Dashboard':'仪表板'}}</b>
-          <el-input v-model="search" class="w-50 m-2" :placeholder="language===1?'Search':'搜索'" clearable>
+          <b>{{store.state['language']===1?'Dashboard':'仪表板'}}</b>
+          <el-input v-model="search" class="w-50 m-2" :placeholder="store.state['language']===1?'Search':'搜索'" clearable>
             <template #prefix>
               <el-icon class="el-input__icon"><Search /></el-icon>
             </template>
@@ -20,18 +20,18 @@
               <path d="M192.032 631.402667V404.725333C192.032 228.330667 335.285333 85.333333 512 85.333333s319.968 142.997333 319.968 319.392v226.677334l60.608 121.013333c10.645333 21.237333-4.832 46.218667-28.618667 46.218667H160.042667c-23.786667 0-39.253333-24.981333-28.618667-46.218667l60.608-121.013333z m620.16 103.36l-40.842667-81.536a31.893333 31.893333 0 0 1-3.381333-14.282667V404.725333c0-141.12-114.602667-255.509333-255.968-255.509333S256.032 263.605333 256.032 404.725333V638.933333c0 4.96-1.162667 9.845333-3.381333 14.293334l-40.842667 81.525333h600.384z m-443.306667 152.32a31.893333 31.893333 0 0 1-4.149333-44.981334 32.032 32.032 0 0 1 45.056-4.138666A159.36 159.36 0 0 0 512 874.773333a159.36 159.36 0 0 0 102.186667-36.8 32.032 32.032 0 0 1 45.056 4.138667 31.893333 31.893333 0 0 1-4.16 44.981333A223.402667 223.402667 0 0 1 512 938.666667c-52.981333 0-103.2-18.453333-143.114667-51.594667z" p-id="3239"></path>
             </svg>
           </span>
-          <el-avatar style="width: 40px;height: 40px;margin-right: 10px" :src="headPortrait+userInformation['headPortrait']"></el-avatar>
-          <b>{{userInformation['name']}}</b>
+          <el-avatar style="width: 40px;height: 40px;margin-right: 10px" :src="headPortrait+store.state['userInformation']['headPortrait']"></el-avatar>
+          <b>{{store.state['userInformation']['name']}}</b>
         </span>
       </div>
       <div class="body">
         <span class="body-left">
           <div class="body-left-hierarchy1">
-            <span><b>{{language===1?'AdministratorList':'管理员列表'}}</b></span>
+            <span><b>{{store.state['language']===1?'AdministratorList':'管理员列表'}}</b></span>
             <span>
               <el-dropdown trigger="click" @command="handleCommand">
                 <el-button round>
-                  {{language===1?'English':'Chinese'}}<el-icon class="el-icon--right"><arrow-down /></el-icon>
+                  {{store.state['language']===1?'English':'Chinese'}}<el-icon class="el-icon--right"><arrow-down /></el-icon>
                 </el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
@@ -43,7 +43,7 @@
             </span>
           </div>
           <div class="body-left-hierarchy2">
-            <perfect-scrollbar>
+            <el-scrollbar style="height: 100%">
               <div v-for="(item,i) in administratorList" tabindex="-1" class="administrator-list" :key="i" @focus="adminFocus(i)" :class="[item['isFocus']?'administratorColor':'']">
               <span style="width: 40px;margin-left: 0"><el-avatar style="width: 40px;height: 40px;margin: 10px 0 0 10px" :src="headPortrait+item['headPortrait']"/></span>
               <span style="width: 10%;"><b>{{item['name']}}</b></span>
@@ -59,30 +59,30 @@
                     </svg>
                   <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item :command="1">{{language===1?'Rights management':'权限管理'}}</el-dropdown-item>
+                    <el-dropdown-item :command="1">{{store.state['language']===1?'Rights management':'权限管理'}}</el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
               </span>
             </div>
-            </perfect-scrollbar>
+            </el-scrollbar>
           </div>
           <div class="body-left-hierarchy3">
-            <span><b>{{language===1?'Access number':'访问数'}}</b></span>
+            <span><b>{{store.state['language']===1?'Access number':'访问数'}}</b></span>
             <span style="display: flex">
-              <span style="width: 50%;text-align: right;padding-right: 10px">{{language===1?time[1]:time[0]}}</span>
+              <span style="width: 50%;text-align: right;padding-right: 10px">{{store.state['language']===1?time[1]:time[0]}}</span>
             </span>
           </div>
           <div class="body-left-hierarchy4">
             <span style="width: 150px;height: 100%;">
               <div class="calendar" :class="calendarChoose===1?'background-black':''" @click="calendarClick(1)"  >
-                7{{language===1?' Day':' 天'}}
+                7{{store.state['language']===1?' Day':' 天'}}
               </div>
               <div class="calendar" :class="calendarChoose===2?'background-black':''" @click="calendarClick(2)">
-                12{{language===1?' Day':' 天'}}
+                12{{store.state['language']===1?' Day':' 天'}}
               </div>
               <div class="calendar" :class="calendarChoose===3?'background-black':''" @click="calendarClick(3)">
-                17{{language===1?' Day':' 天'}}
+                17{{store.state['language']===1?' Day':' 天'}}
               </div>
             </span>
             <span style="margin-left: 10px;width: calc(100% - 160px);height: 100%;text-align: center;">
@@ -91,9 +91,9 @@
           </div>
         </span>
         <span class="body-right">
-          <div class="body-right-hierarchy1"><b>{{language===1?'Information bar':'信息栏'}}</b></div>
+          <div class="body-right-hierarchy1"><b>{{store.state['language']===1?'Information bar':'信息栏'}}</b></div>
           <div class="body-right-hierarchy2">
-            <perfect-scrollbar>
+            <el-scrollbar style="height: 100%">
               <div class="body-right-hierarchy2-arrange" v-for="item in arrange" :key="item.id">
                 <span style="width: 40px;height: 100%;border-radius: 100%;background-color: black;text-align: center;">
                   <svg style="margin-top: 5px" t="1657871856414" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4836" width="30" height="30">
@@ -114,18 +114,18 @@
                   </svg>
                 </span>
               </div>
-            </perfect-scrollbar>
+            </el-scrollbar>
           </div>
           <div class="body-right-hierarchy3">
             <div ref="chart" id="thePieChart" style="width: 100%;height: 150px;font-size: 10px"></div>
           </div>
           <div class="body-right-hierarchy4">
             <el-progress :percentage="((number.wallpaperNumber/(number.wallpaperNumber+number.testWallpaperNumber))*100).toFixed(2)" />
-            <div style="width: 100%;font-size: 20px;text-align: center;margin-top: 10px">{{language===1?'Wallpaper Number ':'壁纸总数'}}：{{number.wallpaperNumber+number.testWallpaperNumber}}</div>
+            <div style="width: 100%;font-size: 20px;text-align: center;margin-top: 10px">{{store.state['language']===1?'Wallpaper Number ':'壁纸总数'}}：{{number.wallpaperNumber+number.testWallpaperNumber}}</div>
           </div>
         </span>
       </div>
-      <el-dialog v-model="permissionsDialog" v-loading="permissionsLoading" :title="language===1?'Rights management':'权限管理'" width="500px">
+      <el-dialog v-model="permissionsDialog" v-loading="permissionsLoading" :title="store.state['language']===1?'Rights management':'权限管理'" width="500px">
         <el-tree
           ref="permissionsTree"
           :data="permissionsData"
@@ -135,17 +135,18 @@
           :props="permissionsProps"
         />
         <div style="width: 100%;text-align: center;margin-top: 10px">
-          <el-button @click="permissionsDialog=false">{{language===1?'Cancel':'取消'}}</el-button>
-          <el-button @click="permissionsClick" :disabled="userPermissions['changePermissions']===0" type="primary">{{language===1?'Save':'保存'}}</el-button>
+          <el-button @click="permissionsDialog=false">{{store.state['language']===1?'Cancel':'取消'}}</el-button>
+          <el-button @click="permissionsClick" :disabled="store.state['permissions']['changePermissions']===0" type="primary">{{store.state['language']===1?'Save':'保存'}}</el-button>
         </div>
       </el-dialog>
-    </perfect-scrollbar>
+    </el-scrollbar>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, inject, reactive, onMounted, onActivated } from "vue";
 import { ElMessage } from "element-plus";
+import { useStore } from  "vuex";
 /**
  * 接口区
  */
@@ -158,12 +159,9 @@ const { $imgUrl } = proxy as any;
 const { $http } = proxy as any;
 const { $echarts } = proxy as any;
 const { $cookies } = proxy as any;
+const store = useStore();
 let search = ref('');
 const headPortrait = $imgUrl+'/headPortrait/';
-let language:any = inject('language');
-const modifyLanguage:any = inject('modifyLanguage');
-const userInformation:any = inject('userInformation');
-const userPermissions:any = inject('userPermissions');
 const date = new Date();
 const time = ref<any>([]);
 // 月份
@@ -189,7 +187,7 @@ const data = reactive<any>({
     },
     series: [
       {
-        name: language.value===1?'Wallpaper number':'壁纸数量',
+        name: store.state['language']===1?'Wallpaper number':'壁纸数量',
         type: 'pie',
         radius: ['40%', '70%'],
         avoidLabelOverlap: false,
@@ -214,8 +212,8 @@ const data = reactive<any>({
           show: false
         },
         data: [
-          { value: 0, name: language.value===1?'Online':'在线'},
-          { value: 0, name: language.value===1?'Not online':'不在线'}
+          { value: 0, name: store.state['language']===1?'Online':'在线'},
+          { value: 0, name: store.state['language']===1?'Not online':'不在线'}
         ]
       }
     ]
@@ -483,7 +481,7 @@ const handleCommand = (command: number) => {
     }
   }).then((res:any)=>{
     if (res.data){
-      modifyLanguage(command);
+      store.commit('modifyLanguage',{val:command});
       if(command===1){
         permissionsProps.label='English';
         data.option1.series[0].name = 'Wallpaper number';
@@ -497,17 +495,17 @@ const handleCommand = (command: number) => {
       }
       myCharts.value.setOption(data.option1);
     }else{
-      ElMessage.error(language===1?'Failed. Please try again':'失败,请重新尝试');
+      ElMessage.error(store.state['language']===1?'Failed. Please try again':'失败,请重新尝试');
     }
   });
 }
 const adminHandleCommand = (command: number,id: number,uuid: string) => {
   permissionsLoading.value = true;
   permissionsDialog.value = true;
-  userPermissions.value['changePermissions']===1?permissionsProps.disabled='disabled2':permissionsProps.disabled='disabled';
-  language.value===1?permissionsProps.label = 'English':permissionsProps.label = 'Chinese';
+  store.state['permissions']['changePermissions']===1?permissionsProps.disabled='disabled2':permissionsProps.disabled='disabled';
+  store.state['language']===1?permissionsProps.label = 'English':permissionsProps.label = 'Chinese';
   permissionsReturn.id = id;
-  permissionsReturn.uuid = userInformation.value['userId'];
+  permissionsReturn.uuid = store.state['userInformation']['userId'];
   gainPermissions(uuid);
 }
 const adminFocus = (val:number) => {
@@ -607,7 +605,7 @@ const permissionsClick = () => {
   $http.post("admin/PermissionsModify",permissionsReturn).then((res:any)=>{
     if (res.data){
       ElMessage({
-        message: language===1?'Successful':'成功',
+        message: store.state['language']===1?'Successful':'成功',
         type: 'success',
       });
       permissionsDialog.value=false;
@@ -658,9 +656,6 @@ onActivated(()=>{
 .homePage {
   width: 100%;
   height: 100%;
-  .ps{
-    height: 100%;
-  }
   .head{
     width: 100%;
     height: 40px;
@@ -705,10 +700,6 @@ onActivated(()=>{
       .body-left-hierarchy2{
         width: 100%;
         height: 180px;
-        .ps{
-          width: 100%;
-          height: 100%;
-        }
         .administrator-list{
           width: 100%;
           height: 60px;
@@ -777,10 +768,6 @@ onActivated(()=>{
         width: 90%;
         height: 150px;
         margin: 10px 0 0 5%;
-        .ps{
-          width: 100%;
-          height: 150px;
-        }
         .body-right-hierarchy2-arrange{
           width: 100%;
           height: 40px;

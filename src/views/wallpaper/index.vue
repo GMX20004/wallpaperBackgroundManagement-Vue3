@@ -1,9 +1,9 @@
 <template>
   <div class="message">
     <div class="body-hierarchy1">
-      <el-button :type="Select===0?'primary':''" @click="SelectButton(0)">{{language===1?'Online wallpaper':'已上线'}}</el-button>
-      <el-button :type="Select===1?'primary':''" @click="SelectButton(1)">{{language===1?'Not online wallpaper':'未上线'}}</el-button>
-      <el-button :type="Select===2?'primary':''" @click="SelectButton(2)">{{language===1?'Batch upload':'批量上传'}}</el-button>
+      <el-button :type="Select===0?'primary':''" @click="SelectButton(0)">{{store.state['language']===1?'Online wallpaper':'已上线'}}</el-button>
+      <el-button :type="Select===1?'primary':''" @click="SelectButton(1)">{{store.state['language']===1?'Not online wallpaper':'未上线'}}</el-button>
+      <el-button :type="Select===2?'primary':''" @click="SelectButton(2)">{{store.state['language']===1?'Batch upload':'批量上传'}}</el-button>
     </div>
     <div class="body-hierarchy2">
       <div v-show="Select===0" class="Project1">
@@ -45,22 +45,23 @@
         </div>
       </div>
       <div v-show="Select===2" class="Project3">
-        <el-upload
-          style="margin: 20px 0 0 0"
-          v-model:file-list="batchUpload.fileList"
-          action="#"
-          :multiple="true"
-          accept=".jpg,.png,.jpeg,.gif,.webp"
-          :auto-upload="false"
-          list-type="picture-card"
-          :on-change="updateChange"
-          :on-preview="handlePictureCardPreview"
-        >
-          <el-icon><Plus /></el-icon>
-          <template #file="{ file }">
-            <img class="el-upload-list__item-thumbnail" :src="file.url" alt="" />
-            <el-progress v-if="batchUpload.isUpload && file===batchUpload.fileList[0]" type="circle" :percentage="batchUpload.percentage" />
-            <span v-if="!batchUpload.isUpload" class="el-upload-list__item-actions">
+        <el-scrollbar style="width: 100%;height: 100%">
+          <el-upload
+            style="margin: 20px 0 0 0"
+            v-model:file-list="batchUpload.fileList"
+            action="#"
+            :multiple="true"
+            accept=".jpg,.png,.jpeg,.gif,.webp"
+            :auto-upload="false"
+            list-type="picture-card"
+            :on-change="updateChange"
+            :on-preview="handlePictureCardPreview"
+          >
+            <el-icon><Plus /></el-icon>
+            <template #file="{ file }">
+              <img class="el-upload-list__item-thumbnail" :src="file.url" alt="" />
+              <el-progress v-if="batchUpload.isUpload && file===batchUpload.fileList[0]" type="circle" :percentage="batchUpload.percentage" />
+              <span v-if="!batchUpload.isUpload" class="el-upload-list__item-actions">
               <span class="el-upload-list__item-preview" @click="handlePictureCardPreview(file)">
                 <el-icon><zoom-in /></el-icon>
               </span>
@@ -68,11 +69,12 @@
                 <el-icon><Delete /></el-icon>
               </span>
             </span>
-          </template>
-        </el-upload>
-        <div style="width: 80%;margin-left: 10%;text-align: center">
-          <el-button v-if="!batchUpload.isUpload" style="width: 80%;" type="success" @click="upload" :disabled="userPermissions && userPermissions['wallpaperUpload']===0">{{language===1?'Upload':'上传'}}</el-button>
-        </div>
+            </template>
+          </el-upload>
+          <div style="width: 80%;margin-left: 10%;text-align: center">
+            <el-button v-if="!batchUpload.isUpload" style="width: 80%;" type="success" @click="upload" :disabled="store.state['permissions'] && store.state['permissions']['wallpaperUpload']===0">{{store.state['language']===1?'Upload':'上传'}}</el-button>
+          </div>
+        </el-scrollbar>
       </div>
     </div>
     <el-image-viewer v-if="batchUpload.dialogVisible" @close="batchUpload.dialogVisible=false" :url-list="[batchUpload.dialogImageUrl]"/>
@@ -85,7 +87,7 @@
             :src="$imgUrl+picture.details['storageLocation']+'/'+picture.details['id']+'.'+picture.details['type']"></el-image>
         </span>
         <span class="dialog-body-right">
-          <perfect-scrollbar>
+          <el-scrollbar style="width: 100%;height: 100%">
             <el-form
               class="dialog-body-right-form"
               ref="ruleFormRef"
@@ -93,14 +95,14 @@
               :rules="rules"
               label-width="120px"
               size="default">
-              <el-form-item :label="language===1?'Title:':'标题:'" prop="title">
-                <el-input v-model="ruleForm.title" :disabled="(userPermissions['onlineWallpaperModifyTitle']===0 && Select===0) || (userPermissions['notOnlineWallpaperModifyTitle']===0 && Select===1)"></el-input>
+              <el-form-item :label="store.state['language']===1?'Title:':'标题:'" prop="title">
+                <el-input v-model="ruleForm.title" :disabled="(store.state['permissions']['onlineWallpaperModifyTitle']===0 && Select===0) || (store.state['permissions']['notOnlineWallpaperModifyTitle']===0 && Select===1)"></el-input>
               </el-form-item>
-              <el-form-item :label="language===1?'Label:':'标签:'" prop="label">
+              <el-form-item :label="store.state['language']===1?'Label:':'标签:'" prop="label">
                 <el-tag
                   v-for="tag in ruleForm.label"
                   :key="tag"
-                  :closable="(userPermissions['onlineWallpaperModifyLabel']===1 && Select===0) || (userPermissions['notOnlineWallpaperModifyLabel']===1 && Select===1)"
+                  :closable="(store.state['permissions']['onlineWallpaperModifyLabel']===1 && Select===0) || (store.state['permissions']['notOnlineWallpaperModifyLabel']===1 && Select===1)"
                   style="margin:0 10px 5px 0"
                   :disable-transitions="false"
                   @close="handleClose(tag)"
@@ -116,37 +118,37 @@
                   @keyup.enter="handleInputConfirm"
                   @blur="handleInputConfirm"
                 />
-                <el-button v-else style="width: 80px;" size="small" v-show="(userPermissions['onlineWallpaperModifyLabel']===1 && Select===0) || (userPermissions['notOnlineWallpaperModifyLabel']===1 && Select===1)" @click="showInput">
+                <el-button v-else style="width: 80px;" size="small" v-show="(store.state['permissions']['onlineWallpaperModifyLabel']===1 && Select===0) || (store.state['permissions']['notOnlineWallpaperModifyLabel']===1 && Select===1)" @click="showInput">
                   + New Tag
                 </el-button>
               </el-form-item>
-              <el-form-item :label="language===1?'State:':'状态:'">
-                <el-select v-model="ruleForm.state" :disabled="(userPermissions['onlineWallpaperModifyState']===0 && Select===0) || (userPermissions['notOnlineWallpaperModifyState']===0 && Select===1)">
+              <el-form-item :label="store.state['language']===1?'State:':'状态:'">
+                <el-select v-model="ruleForm.state" :disabled="(store.state['permissions']['onlineWallpaperModifyState']===0 && Select===0) || (store.state['permissions']['notOnlineWallpaperModifyState']===0 && Select===1)">
                   <el-option
                     v-for="item in wallpaperState"
                     :key="item.val"
-                    :label="language===1?item.English:item.Chinese"
+                    :label="store.state['language']===1?item.English:item.Chinese"
                     :value="item.val"
                     :disabled="item['disabled']"
                   ></el-option>
                 </el-select>
               </el-form-item>
-              <el-form-item :label="language===1?'Storage location:':'存储位置:'">
-                <el-select v-model="ruleForm.storageLocation" :disabled="(userPermissions['onlineWallpaperModifyLocation']===0 && Select===0) || (userPermissions['notOnlineWallpaperModifyLocation']===0 && Select===1)">
+              <el-form-item :label="store.state['language']===1?'Storage location:':'存储位置:'">
+                <el-select v-model="ruleForm.storageLocation" :disabled="(store.state['permissions']['onlineWallpaperModifyLocation']===0 && Select===0) || (store.state['permissions']['notOnlineWallpaperModifyLocation']===0 && Select===1)">
                   <el-option
                     v-for="item in folderType"
                     :key="item.id"
-                    :label="language===1?item['folder']:item['note']"
+                    :label="store.state['language']===1?item['folder']:item['note']"
                     :value="item['folder']"
                   ></el-option>
                 </el-select>
               </el-form-item>
             </el-form>
             <div style="width: 100%;text-align: center">
-              <el-button @click="cancel(ruleFormRef)">{{language===1?'Cancel':'取消'}}</el-button>
-              <el-button type="primary" :disabled="(userPermissions['onlineWallpaperModify']===0 && Select===0) || (userPermissions['notOnlineWallpaperModify']===0 && Select===1)" @click="submit(ruleFormRef)">{{language===1?'Save':'保存'}}</el-button>
+              <el-button @click="cancel(ruleFormRef)">{{store.state['language']===1?'Cancel':'取消'}}</el-button>
+              <el-button type="primary" :disabled="(store.state['permissions']['onlineWallpaperModify']===0 && Select===0) || (store.state['permissions']['notOnlineWallpaperModify']===0 && Select===1)" @click="submit(ruleFormRef)">{{store.state['language']===1?'Save':'保存'}}</el-button>
             </div>
-          </perfect-scrollbar>
+          </el-scrollbar>
         </span>
       </div>
     </el-dialog>
@@ -157,6 +159,7 @@
 import { inject, nextTick, onMounted, reactive, ref } from "vue";
 import Qs from 'qs';
 import { FormRules, ElInput, UploadProps, ElMessage, FormInstance } from "element-plus";
+import { useStore } from "vuex";
 /**
  * 接口区
  */
@@ -196,9 +199,7 @@ const proxy = inject("proxy");
 const { $imgUrl } = proxy as any;
 const { $http } = proxy as any;
 const { $cookies } = proxy as any;
-const userPermissions:any = inject('userPermissions');
-let language:any = inject('language');
-const userInformation:any = inject('userInformation');
+const store = useStore();
 let Select = ref<number>(0);
 const dialog = ref<boolean>(false);
 const picture = reactive<pictureInterface>({
@@ -318,11 +319,11 @@ const batchUpload = reactive<uploadInterface>({
           }).then((res:any)=>{
           if (res.data){
             ElMessage({
-              message: language===1?'Successful':'成功',
+              message: store.state['language']===1?'Successful':'成功',
               type: 'success',
             })
           }else{
-            ElMessage.error(language===1?'Failure':'失败');
+            ElMessage.error(store.state['language']===1?'Failure':'失败');
           }
         });
       }
@@ -444,12 +445,12 @@ const batchUpload = reactive<uploadInterface>({
   }
   const updateChange = (file: any, fileList: any) => {
     if (!/\.(jpg|png|jpeg|gif|webp)$/.test(file.name)) {
-      ElMessage.error(language.value===1?'File format error':'文件格式错误');
+      ElMessage.error(store.state['language']===1?'File format error':'文件格式错误');
       fileList.splice(fileList.length-1, 1);
       return;
     }
     if (file.size > 5242880) {
-      ElMessage.error(file.name+(language.value===1?' Greater than':' 大于')+'5MB');
+      ElMessage.error(file.name+(store.state['language']===1?' Greater than':' 大于')+'5MB');
       fileList.splice(fileList.length-1, 1);
       return;
     }
@@ -459,7 +460,7 @@ const batchUpload = reactive<uploadInterface>({
     while (batchUpload.fileList.length!==0){
       batchUpload.percentage = 0;
       let fileFormData = new FormData();
-      fileFormData.append("userId", userInformation.value['id']);
+      fileFormData.append("userId", store.state['userInformation']['id']);
       fileFormData.append("file", batchUpload.fileList[0]['raw']);
       fileFormData.append('size', batchUpload.fileList[0]['size']);
       await $http.post('/L/UploadWallpaper',fileFormData,{
@@ -477,7 +478,7 @@ const batchUpload = reactive<uploadInterface>({
           }
         }
       }).catch(()=>{
-        ElMessage.error(language.value===1?'Upload failed':'上传失败');
+        ElMessage.error(store.state['language']===1?'Upload failed':'上传失败');
         batchUpload.isUpload = false;
         return;
       })
@@ -494,9 +495,6 @@ const batchUpload = reactive<uploadInterface>({
 .message{
   width: 100%;
   height: 100%;
-  .ps{
-    height: 100%;
-  }
   .body-hierarchy1{
     width: 100%;
     text-align: center;
@@ -531,6 +529,11 @@ const batchUpload = reactive<uploadInterface>({
       width: 96%;
       height: 100%;
       margin-left: 2%;
+      ::v-deep .el-upload-list{
+        li{
+          margin: 0 34px 8px 0;
+        }
+      }
     }
     .wallpaper-line{
       width: 100%;
@@ -558,10 +561,6 @@ const batchUpload = reactive<uploadInterface>({
       height: 480px;
       margin: 10px;
       border-left: 1px solid #b1b4b9;
-      .ps{
-        width: 100%;
-        height: 100%;
-      }
       .dialog-body-right-form{
         width: 100%;
       }

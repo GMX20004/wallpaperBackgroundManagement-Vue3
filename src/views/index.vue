@@ -36,7 +36,7 @@
     </span>
       <span class="window">
       <div class="accordingWindow">
-        <el-config-provider :locale="language===1?en:zhCn">
+        <el-config-provider :locale="store.state.language===1?en:zhCn">
           <router-view v-slot="{ Component }" v-show="$route.meta['keepAlive']">
             <keep-alive>
               <component :is="Component"/>
@@ -81,12 +81,13 @@
   </div>
 </template>
 <script setup lang="ts">
-import { inject, onMounted, provide, reactive, readonly, ref } from "vue";
+import { inject, onMounted, provide, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import zhCn from "element-plus/lib/locale/lang/zh-cn"
 import en from 'element-plus/lib/locale/lang/en';
 import { ElMessage, FormInstance, FormRules } from "element-plus";
 import Qs from "qs";
+import { useStore } from  "vuex";
 /**
  * 接口区
  */
@@ -108,9 +109,8 @@ const { $imgUrl } = proxy as any;
 const router = useRouter();
 let options = ref(0);
 let height = ref<string>(window.innerHeight<700?'700px':'100%');
-let language = ref(1);
+const store = useStore();
 const isPc = ref<boolean>(true);
-const userInformation = ref<any>({});
 const isLogTo = ref<number>(-1);
 const ruleFormRef = ref<FormInstance>();
 const logIn = reactive<logInInterface>({
@@ -123,7 +123,7 @@ const logIn = reactive<logInInterface>({
 });
 const validatePass = (rule: any, value: any, callback: any) => {
   if (value === '') {
-    callback(new Error(language.value===1?'Please input':'请输入'))
+    callback(new Error(store.state.language===1?'Please input':'请输入'));
   } else {
       if (!ruleFormRef.value) return;
       callback()
@@ -133,9 +133,7 @@ const rules  = reactive<FormRules>({
   account:{  validator: validatePass, trigger: 'blur' },
   password:{  validator: validatePass, trigger: 'blur'}
 });
-const userPermissions = ref<any>();
 const timing = ref<any>();
-const cs = ref<number>(0);
 /**
  * 方法区
  */
@@ -182,7 +180,7 @@ const submit = (formEl: FormInstance | undefined) => {
     if (valid) {
       if (logIn.yzmText.toLowerCase() !== logIn.yzm.toLowerCase()){
         ElMessage({
-          message: language.value===1?'Verification code error, please enter again':'验证码错误,请重新输入',
+          message: store.state.language===1?'Verification code error, please enter again':'验证码错误,请重新输入',
           type: 'warning',
         });
         yzmQuery();
@@ -193,13 +191,13 @@ const submit = (formEl: FormInstance | undefined) => {
         })).then((res:any)=>{
           if (res.data['exists']){
             ElMessage({
-              message: language.value===1?'Login successful':'登录成功',
+              message: store.state.language===1?'Login successful':'登录成功',
               type: 'success',
             });
             $cookies.set('uuid',res.data['uuid'],{ expires: -1 });
             userInformationQuery();
           }else{
-            ElMessage.error(language.value===1?'Account or password is incorrect':'帐号或密码错误')
+            ElMessage.error(store.state.language===1?'Account or password is incorrect':'帐号或密码错误')
           }
         });
       }
@@ -217,8 +215,8 @@ const userInformationQuery = () => {
   $http.post('/User/userUUID',{
     uuid: $cookies.get('uuid')
   }).then((data:any)=>{
-    userInformation.value = data.data[0];
-    language.value = data.data[0]['language'];
+    store.commit('modifyUserInformation',{val:data.data[0]});
+    store.commit('modifyLanguage',{val:data.data[0]['language']});
     gainPermissions();
     isLogTo.value = 1;
     if (window.location.pathname == '/'){
@@ -249,7 +247,7 @@ const gainPermissions = () => {
       uuid:$cookies.get('uuid')
     }
   }).then((res:any)=>{
-    userPermissions.value = res.data[0];
+    store.commit('modifyPermissions',{val:res.data[0]});
   })
 }
 const uuidCheck = () => {
@@ -275,15 +273,9 @@ onMounted(()=>{
 /**
  * 全局变量
  */
-provide('language',readonly(language));
-provide('modifyLanguage', (val:number) => {
-  language.value = val;
-});
 provide('modifyIsLogTo', (val:number) => {
   isLogTo.value = val;
 });
-provide('userInformation',userInformation);
-provide('userPermissions',userPermissions);
 /**
  * 监视浏览器分辨率变化
  */

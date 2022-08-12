@@ -1,10 +1,10 @@
 <template>
   <div class="setUp">
-    <perfect-scrollbar>
-      <el-button style="width: 100px;margin-left: 50px" type="primary" round @click="viewLogClick">{{language===1?'View log':'查看日志'}}</el-button>
-      <el-button style="width: 100px;margin-left: 50px" type="danger" round @click="exitClick">{{language===1?'Exit':'退出'}}</el-button>
-    </perfect-scrollbar>
-    <el-dialog v-model="log.dialogVisible" v-loading="log.loading" title="Tips" width="1000px">
+    <el-scrollbar style="height: 100%">
+      <el-button style="width: 100px;margin-left: 50px" type="primary" round @click="viewLogClick" :disabled="store.state['permissions']['logView']===0">{{store.state['language']===1?'View log':'查看日志'}}</el-button>
+      <el-button style="width: 100px;margin-left: 50px" type="danger" round @click="exitClick">{{store.state['language']===1?'Exit':'退出'}}</el-button>
+    </el-scrollbar>
+    <el-dialog v-model="log.dialogVisible" v-loading="log.loading" :title="store.state['language']===1?'Log':'日志'" width="1000px">
       <el-table :data="log.tableData" stripe style="width: 100%;" height="300px">
         <el-table-column prop="userId" label="用户编号" align="center" width="100" />
         <el-table-column prop="action" label="操作" align="center" />
@@ -13,7 +13,7 @@
       </el-table>
       <div style="width: 100%;margin-top: 10px;display: flex">
         <span style="width: 30%;line-height: 40px">
-          <span style="color: #2c95d4;cursor: pointer" @click="logExport">导出日志</span>
+          <span v-if="store.state['permissions']['logExport']===1" style="color: #2c95d4;cursor: pointer" @click="logExport">导出日志</span>
         </span>
         <span style="width: 70%;text-align: right">
           <el-pagination @current-change="logPage" layout="prev, pager, next" :total="log.total" />
@@ -26,10 +26,10 @@
 <script setup lang="ts">
 import {
   inject,
-  onMounted,
   reactive
 } from "vue";
 import router from "@/router";
+import { useStore } from  "vuex";
 /**
  * 接口区
  */
@@ -48,7 +48,7 @@ const proxy = inject("proxy");
 const { $cookies } = proxy as any;
 const { $http } = proxy as any;
 const { $file } = proxy as any;
-let language:any = inject('language');
+const store = useStore();
 const modifyIsLogTo:any = inject('modifyIsLogTo');
 // 日志
 const log = reactive<logInterface>({
@@ -107,10 +107,6 @@ const logExport = () => {
 .setUp{
   width: 100%;
   height: 100%;
-  .ps{
-    width: 100%;
-    height: 100%;
-  }
   ::v-deep .el-pagination{
     justify-content: right;
   }

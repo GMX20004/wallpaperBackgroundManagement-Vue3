@@ -1,112 +1,111 @@
 <template>
   <div class="user">
-    <perfect-scrollbar>
-      <div class="main-body">
-        <span class="body-left">
-          <div class="user-list">
-            <div style="width: 100%;height: calc(100% - 16px);margin-top: 8px" v-loading="userListLoading">
-              <perfect-scrollbar>
-              <div class="user-information" v-for="(item,i) in userList" tabindex="-1" :key="i" @focus="userFocus(i)" :class="[item['isFocus']?'userColor':'']">
-                <el-avatar style="width: 30px;height: 30px;margin: 5px 0 0 10px" :src="headPortrait+item['headPortrait']"/>
-                <span style="width: 10%;">{{item['name']}}</span>
-                <span style="color: #8d8d8d;width: 30%;">{{item['email']}}</span>
-                <span style="color: #8d8d8d;width: calc(10% - 20px);">{{item['sex']}}</span>
-                <span style="color: #8d8d8d;width: 50%;">最近登入时间：{{item['recentLogin']}}</span>
-              </div>
-            </perfect-scrollbar>
+    <div class="main-body">
+      <span class="body-left">
+        <div class="user-list">
+          <div style="width: 100%;height: calc(100% - 16px);margin-top: 8px" v-loading="userListLoading">
+            <el-scrollbar style="height: 100%">
+            <div class="user-information" v-for="(item,i) in userList" tabindex="-1" :key="i" @focus="userFocus(i)" :class="[item['isFocus']?'userColor':'']">
+              <el-avatar style="width: 30px;height: 30px;margin: 5px 0 0 10px" :src="headPortrait+item['headPortrait']"/>
+              <span style="width: 10%;">{{item['name']}}</span>
+              <span style="color: #8d8d8d;width: 30%;">{{item['email']}}</span>
+              <span style="color: #8d8d8d;width: calc(10% - 20px);">{{item['sex']}}</span>
+              <span style="color: #8d8d8d;width: 50%;">最近登入时间：{{item['recentLogin']}}</span>
             </div>
+          </el-scrollbar>
           </div>
-          <div class="user-list-paging">
-            <el-pagination
-              v-model:currentPage="userListPaging.page"
-              v-model:page-size="userListPaging.pageSize"
-              :page-sizes="[10, 20, 30, 40]"
-              layout="total, sizes, pager, next"
-              :total="userListPaging.total"
-              @size-change="handleSizeChange"
-              @current-change="handleCurrentChange"
-            />
+        </div>
+        <div class="user-list-paging">
+          <el-pagination
+            v-model:currentPage="userListPaging.page"
+            v-model:page-size="userListPaging.pageSize"
+            :page-sizes="[10, 20, 30, 40]"
+            layout="total, sizes, pager, next"
+            :total="userListPaging.total"
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+          />
+        </div>
+      </span>
+      <span v-if="userList[userIsFocus]" class="body-right">
+        <div  style="width: 100%;height: 50%;overflow: hidden">
+          <div style="width: 96%;margin-left: 2%;text-align: right;height: 15%">
+            <el-dropdown trigger="click" placement="bottom-end" @command="handleCommand">
+                <svg style="margin-top: 5px;cursor:pointer;" t="1657871751755" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3823" width="30" height="30">
+                  <path d="M415.930119 223.790358c0-52.980346 43.003528-95.983874 95.983874-95.983874s95.983874 43.003528 95.983874 95.983874-43.003528 95.983874-95.983874 95.983874S415.930119 276.770704 415.930119 223.790358z" p-id="3824"></path>
+                  <path d="M415.930119 511.741979c0-52.980346 43.003528-95.983874 95.983874-95.983874s95.983874 43.003528 95.983874 95.983874-43.003528 95.983874-95.983874 95.983874S415.930119 564.722325 415.930119 511.741979z" p-id="3825"></path>
+                  <path d="M415.930119 799.865614c0-52.980346 43.003528-95.983874 95.983874-95.983874s95.983874 43.003528 95.983874 95.983874-43.003528 95.983874-95.983874 95.983874S415.930119 852.673946 415.930119 799.865614z" p-id="3826"></path>
+                </svg>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item :command="1">{{store.state['language']===1?'Modify information':'修改信息'}}</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
           </div>
-        </span>
-        <span v-if="userList[userIsFocus]" class="body-right">
-          <div  style="width: 100%;height: 50%;overflow: hidden">
-            <div style="width: 96%;margin-left: 2%;text-align: right;height: 15%">
-              <el-dropdown trigger="click" placement="bottom-end" @command="handleCommand">
-                  <svg style="margin-top: 5px;cursor:pointer;" t="1657871751755" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3823" width="30" height="30">
-                    <path d="M415.930119 223.790358c0-52.980346 43.003528-95.983874 95.983874-95.983874s95.983874 43.003528 95.983874 95.983874-43.003528 95.983874-95.983874 95.983874S415.930119 276.770704 415.930119 223.790358z" p-id="3824"></path>
-                    <path d="M415.930119 511.741979c0-52.980346 43.003528-95.983874 95.983874-95.983874s95.983874 43.003528 95.983874 95.983874-43.003528 95.983874-95.983874 95.983874S415.930119 564.722325 415.930119 511.741979z" p-id="3825"></path>
-                    <path d="M415.930119 799.865614c0-52.980346 43.003528-95.983874 95.983874-95.983874s95.983874 43.003528 95.983874 95.983874-43.003528 95.983874-95.983874 95.983874S415.930119 852.673946 415.930119 799.865614z" p-id="3826"></path>
-                  </svg>
-                  <template #dropdown>
-                    <el-dropdown-menu>
-                      <el-dropdown-item :command="1">{{language===1?'Modify information':'修改信息'}}</el-dropdown-item>
-                    </el-dropdown-menu>
-                  </template>
-                </el-dropdown>
-            </div>
-            <div style="width: 96%;margin-left: 2%;text-align: center;height: 45%">
-               <el-avatar style="width: 100px;height: 100px;" :src="headPortrait+userList[userIsFocus]['headPortrait']"/>
-            </div>
-            <div style="width: 96%;margin-left: 2%;text-align: center;font-size: 30px;height: 20%">{{userList[userIsFocus]['name']}}</div>
-            <div style="width: 96%;margin-left: 2%;text-align: center;height: 20%;">
-              <el-tag class="ml-2" type="danger">{{language===1?'praise':'获赞'}}:{{userList[userIsFocus]['praise']}}</el-tag>
-              <el-tag class="ml-2" type="warning">{{language===1?'fans':'粉丝'}}:{{userList[userIsFocus]['fans']}}</el-tag>
-              <el-tag class="ml-2" type="info">{{language===1?'attention':'关注'}}:{{userList[userIsFocus]['focusOn']}}</el-tag>
-              <el-tag>{{language===1?'contribute':'投稿'}}:{{userList[userIsFocus]['contribute']}}</el-tag>
-            </div>
+          <div style="width: 96%;margin-left: 2%;text-align: center;height: 45%">
+             <el-avatar style="width: 100px;height: 100px;" :src="headPortrait+userList[userIsFocus]['headPortrait']"/>
           </div>
-          <div style="width: 100%;height: 50%">
-            <div class="body-right-text">{{language===1?'gender':'性别'}}：{{userList[userIsFocus]['sex']}}</div>
-            <el-tooltip
-              class="box-item"
-              effect="dark"
-              :content="userList[userIsFocus]['instructions']"
-              placement="top"
-            >
-              <div class="body-right-text">{{language===1?'Individuality signature':'个性签名'}}：{{userList[userIsFocus]['instructions'].length>8?userList[userIsFocus]['instructions'].slice(0,8)+'...':userList[userIsFocus]['instructions']}}</div>
-            </el-tooltip>
-            <div class="body-right-text">{{language===1?'email':'邮箱'}}：{{userList[userIsFocus]['email']}}</div>
-            <div class="body-right-text">{{language===1?'Last login time':'最后登入时间'}}：{{userList[userIsFocus]['recentLogin']}}</div>
-            <div class="body-right-text">{{language===1?'Creation time':'创建时间'}}：{{userList[userIsFocus]['creationTime']}}</div>
+          <div style="width: 96%;margin-left: 2%;text-align: center;font-size: 30px;height: 20%">{{userList[userIsFocus]['name']}}</div>
+          <div style="width: 96%;margin-left: 2%;text-align: center;height: 20%;">
+            <el-tag class="ml-2" type="danger">{{store.state['language']===1?'praise':'获赞'}}:{{userList[userIsFocus]['praise']}}</el-tag>
+            <el-tag class="ml-2" type="warning">{{store.state['language']===1?'fans':'粉丝'}}:{{userList[userIsFocus]['fans']}}</el-tag>
+            <el-tag class="ml-2" type="info">{{store.state['language']===1?'attention':'关注'}}:{{userList[userIsFocus]['focusOn']}}</el-tag>
+            <el-tag>{{store.state['language']===1?'contribute':'投稿'}}:{{userList[userIsFocus]['contribute']}}</el-tag>
           </div>
-        </span>
+        </div>
+        <div style="width: 100%;height: 50%">
+          <div class="body-right-text">{{store.state['language']===1?'gender':'性别'}}：{{userList[userIsFocus]['sex']}}</div>
+          <el-tooltip
+            class="box-item"
+            effect="dark"
+            :content="userList[userIsFocus]['instructions']"
+            placement="top"
+          >
+            <div class="body-right-text">{{store.state['language']===1?'Individuality signature':'个性签名'}}：{{userList[userIsFocus]['instructions'].length>8?userList[userIsFocus]['instructions'].slice(0,8)+'...':userList[userIsFocus]['instructions']}}</div>
+          </el-tooltip>
+          <div class="body-right-text">{{store.state['language']===1?'email':'邮箱'}}：{{userList[userIsFocus]['email']}}</div>
+          <div class="body-right-text">{{store.state['language']===1?'Last login time':'最后登入时间'}}：{{userList[userIsFocus]['recentLogin']}}</div>
+          <div class="body-right-text">{{store.state['language']===1?'Creation time':'创建时间'}}：{{userList[userIsFocus]['creationTime']}}</div>
+        </div>
+      </span>
+    </div>
+    <el-dialog v-model="dialogVisible" :title="store.state['language']===1?'Modify information':'修改信息'" width="700px">
+      <div style="height: 100px;width: 100%;text-align: center">
+        <el-upload
+          :auto-upload="false"
+          class="upload-demo"
+          accept=".jpg,.png,.jpeg,.gif,.webp"
+          :show-file-list="false"
+          list-type="picture"
+          :on-change="updateChange"
+          action="#">
+          <el-avatar style="width: 100px;height: 100px;" :src="modifyParameter.imgSrc"/>
+        </el-upload>
       </div>
-      <el-dialog v-model="dialogVisible" :title="language===1?'Modify information':'修改信息'" width="700px">
-        <div style="height: 100px;width: 100%;text-align: center">
-          <el-upload
-            :auto-upload="false"
-            class="upload-demo"
-            accept=".jpg,.png,.jpeg,.gif,.webp"
-            :show-file-list="false"
-            list-type="picture"
-            :on-change="updateChange"
-            action="#">
-            <el-avatar style="width: 100px;height: 100px;" :src="modifyParameter.imgSrc"/>
-          </el-upload>
-        </div>
-        <el-form label-width="150px" style="margin-top: 20px">
-          <el-form-item :label="language===1?'Nickname':'昵称'">
-            <el-input v-model="modifyParameter.name"></el-input>
-          </el-form-item>
-          <el-form-item :label="language===1?'Individuality signature':'个性签名'">
-            <el-input v-model="modifyParameter.signature"></el-input>
-          </el-form-item>
-          <el-form-item :label="language===1?'Modify the reason':'修改原因'">
-            <el-input v-model="modifyParameter.reason"></el-input>
-          </el-form-item>
-        </el-form>
-        <div style="width: 100%;text-align: center">
-          <el-button @click="dialogVisible=false">取消</el-button>
-          <el-button type="primary" :disabled="userPermissions['modifyingUserInformation']===0" @click="modifySubmit">修改</el-button>
-        </div>
-      </el-dialog>
-    </perfect-scrollbar>
+      <el-form label-width="150px" style="margin-top: 20px">
+        <el-form-item :label="store.state['language']===1?'Nickname':'昵称'">
+          <el-input v-model="modifyParameter.name"></el-input>
+        </el-form-item>
+        <el-form-item :label="store.state['language']===1?'Individuality signature':'个性签名'">
+          <el-input v-model="modifyParameter.signature"></el-input>
+        </el-form-item>
+        <el-form-item :label="store.state['language']===1?'Modify the reason':'修改原因'">
+          <el-input v-model="modifyParameter.reason"></el-input>
+        </el-form-item>
+      </el-form>
+      <div style="width: 100%;text-align: center">
+        <el-button @click="dialogVisible=false">取消</el-button>
+        <el-button type="primary" :disabled="store.state['permissions']['modifyingUserInformation']===0" @click="modifySubmit">修改</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { inject, onMounted, reactive, ref } from "vue";
 import { ElMessage } from "element-plus";
+import { useStore } from "vuex";
 /**
  * 接口区
  */
@@ -124,9 +123,8 @@ const proxy = inject("proxy");
 const { $imgUrl } = proxy as any;
 const { $http } = proxy as any;
 const { $cookies } = proxy as any;
+const store = useStore();
 const headPortrait = $imgUrl+'/headPortrait/';
-let language:any = inject('language');
-const userPermissions:any = inject('userPermissions');
 const userIsFocus = ref<number>(0);
 const userListLoading = ref<boolean>(false);
 const userList = ref<any>([]);
@@ -194,12 +192,12 @@ const getUserList = () => {
 }
 const updateChange = (file: any, fileList: any) => {
   if (!/\.(jpg|png|jpeg|gif|webp)$/.test(file.name)) {
-    ElMessage.error(language.value===1?'File format error':'文件格式错误');
+    ElMessage.error(store.state['language']===1?'File format error':'文件格式错误');
     fileList.splice(0, 1);
     return;
   }else{
     if (file.size>512000){
-      ElMessage.error(language.value===1?' File size is greater than 500kb':'文件大于500kb');
+      ElMessage.error(store.state['language']===1?' File size is greater than 500kb':'文件大于500kb');
       fileList.splice(0, 1);
     }else{
       if (fileList.length>1) fileList.splice(0, 1);
@@ -218,13 +216,13 @@ const modifySubmit = () => {
   $http.post('User/userModify',data).then((res:any)=>{
     if (res.data){
       ElMessage({
-        message: language.value===1?'Modify the success':'修改成功',
+        message: store.state['language']===1?'Modify the success':'修改成功',
         type: 'success',
       });
       getUserList();
       dialogVisible.value = false;
     }else{
-      ElMessage.error(language.value===1?'Failure':'失败');
+      ElMessage.error(store.state['language']===1?'Failure':'失败');
     }
   });
 }
@@ -239,10 +237,7 @@ onMounted(()=>{
 .user{
   width: 100%;
   height: 100%;
-  .ps{
-    width: 100%;
-    height: 100%;
-  }
+  display: flex;
   .main-body{
     width: 100%;
     height: 100%;
@@ -255,9 +250,6 @@ onMounted(()=>{
         height: 80%;
         border-radius: 20px;
         border: 1px solid #b1b4b9;
-        .ps{
-          height: 100%;
-        }
         .user-information{
           width: 100%;
           height: 40px;
