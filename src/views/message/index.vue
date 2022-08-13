@@ -31,6 +31,7 @@
               <div style="width: 96%;margin: 20px 0 0 2%" v-show="isAnnouncement">
                 <div style="width: 100%;">
                   <el-date-picker
+                    style="width: 95%;"
                     v-model="contentAnnouncement.time"
                     type="datetimerange"
                     range-separator="To"
@@ -92,7 +93,8 @@
                           <template #dropdown>
                             <el-dropdown-menu>
                               <el-dropdown-item :command="1">{{store.state['language']===1?'More operations':'更多操作'}}</el-dropdown-item>
-                              <el-dropdown-item :command="2">{{store.state['language']===1?'Delete':'删除'}}</el-dropdown-item>
+                              <el-dropdown-item :command="2">{{store.state['language']===1?'Insert a line above':'在上面插入一行'}}</el-dropdown-item>
+                              <el-dropdown-item :command="3">{{store.state['language']===1?'Delete':'删除'}}</el-dropdown-item>
                             </el-dropdown-menu>
                           </template>
                         </el-dropdown>
@@ -112,15 +114,19 @@
             <div style="width: 100%;height: 90%;margin-top: 3%">
               <el-scrollbar style="height: 100%">
               <div style="font-size: 20px;width: 96%;margin: 10px 0 0 2%;text-align: center"><b>{{contentAnnouncement.title}}</b></div>
-              <div style="width: 100%;" v-for="(item,i) in contentAnnouncement.content" :key="i">
-                <div class="preview-content" :style="{'color': item['color'],'text-align': item['align'],'font-size': item['fontSize']+'px'}" v-if="item['type']===0">
-                  {{item['text']}}
-                </div>
-                <div class="preview-content" v-if="item['type']===1 && item['pictureUrl']" :style="{'text-align': item['align']}">
-                  <el-image :fit="item['pictureFit']?'scale-down':'fill'" :style="{'width':item['width']+'px','height':item['height']+'px'}" :src="item['pictureUrl']" />
-                </div>
-                <div class="preview-content" v-if="item['type']===2" :style="{'color': item['color'],'text-align': item['align'],'font-size': item['fontSize']+'px'}">
-                  <a :href="item['hyperlinks']" :style="{'text-decoration':item['hyperlinksCss']['underline']?'':'none'}" :target="item['hyperlinksCss']['target']">{{item['text']}}</a>
+              <div class="preview-content">
+                <div
+                  v-for="(item,i) in contentAnnouncement.content"
+                  :key="i"
+                  :style="{'text-align': item['align'],'display':item['displayMode']===0?'block':'inline','width':'100%'}">
+                  <span v-if="item['type']===0" :style="{'color': item['color'],'font-size': item['fontSize']+'px'}">{{item['text']}}</span>
+                  <el-image v-if="item['type']===1"
+                            :fit="item['pictureFit']?'scale-down':'fill'"
+                            :style="{'width':item['width']+'px','height':item['height']+'px'}"
+                            :src="item['pictureUrl']" />
+                  <a v-if="item['type']===2" :href="item['hyperlinks']"
+                     :style="{'color': item['color'],'font-size': item['fontSize']+'px','text-decoration':item['hyperlinksCss']['underline']?'':'none'}"
+                     :target="item['hyperlinksCss']['target']">{{item['text']}}</a>
                 </div>
               </div>
             </el-scrollbar>
@@ -186,7 +192,22 @@
       v-model="drawerAnnouncement"
       :title="store.state['language']===1?'More operations':'更多操作'"
       direction="ltr">
-      <div v-if="contentAnnouncement.content[current]['type']===0 || contentAnnouncement.content[current]['type']===2" style="width: 100%;">
+      <div>
+        <div class="drawer-div">
+          <span>{{store.state['language']===1?'DisplayMode':'显示模式'}}:</span>
+          <span>
+          <el-select v-model="contentAnnouncement.content[current]['displayMode']">
+            <el-option
+              v-for="item in displayMode"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+        </span>
+        </div>
+      </div>
+      <div v-show="contentAnnouncement.content[current]['type']===0 || contentAnnouncement.content[current]['type']===2" style="width: 100%;">
         <div class="drawer-div">
           <span>{{store.state['language']===1?'color':'颜色'}}:</span>
           <span><el-color-picker v-model="contentAnnouncement.content[current]['color']" /></span>
@@ -196,7 +217,7 @@
           <span><el-input-number v-model="contentAnnouncement.content[current]['fontSize']" :min="1" :max="20" /></span>
         </div>
       </div>
-      <div v-if="contentAnnouncement.content[current]['type']===1" style="width: 100%;">
+      <div v-show="contentAnnouncement.content[current]['type']===1" style="width: 100%;">
         <div class="drawer-div">
           <span>{{store.state['language']===1?'Adaptive':'自适应'}}:</span>
           <span><el-checkbox v-model="contentAnnouncement.content[current]['pictureFit']"></el-checkbox></span>
@@ -210,7 +231,7 @@
           <span><el-input-number v-model="contentAnnouncement.content[current]['height']" :min="10" :max="200" /></span>
         </div>
       </div>
-      <div v-if="contentAnnouncement.content[current]['type']===2">
+      <div v-show="contentAnnouncement.content[current]['type']===2">
         <div class="drawer-div">
           <span>{{store.state['language']===1?'Underline':'下划线'}}:</span>
           <span><el-checkbox v-model="contentAnnouncement.content[current]['hyperlinksCss']['underline']"></el-checkbox></span>
@@ -227,7 +248,7 @@
         </div>
       </div>
       <div style="width: 100%;">
-        <div class="drawer-div">
+        <div v-show="contentAnnouncement.content[current]['displayMode']===0" class="drawer-div">
           <span>{{store.state['language']===1?'align':'对齐'}}:</span>
           <span>
           <el-select v-model="contentAnnouncement.content[current]['align']">
@@ -285,6 +306,7 @@ const headPortrait = $imgUrl+'/headPortrait/';
 const messageType = ref<number>(1);
 const alignOptions = [{English:'left',Chinese:'左',value: 0},{English:'right',Chinese:'右',value: 1},{English:'center',Chinese:'居中',value: 2}];
 const jumpWay = [{English:'Current Page Display',Chinese:'当前页面显示',value: '_self'},{English:'New page display',Chinese:'新页面显示',value: '_blank'},{English:'Corresponding window display',Chinese:'相应的窗口显示',value: 'three'}];
+const displayMode = [{label:'div',value: 0},{label:'span',value: 1}];
 // 系统公告
 const current = ref<number>(0);
 const isAnnouncement = ref<boolean>(false);
@@ -357,10 +379,33 @@ const gainPermissions = () => {
 // 系统公告
 const handleCommand = (command: number, val: number) => {
   current.value = val;
-  if (command === 1) {
-    drawerAnnouncement.value = true;
-  } else {
-    contentDelete(val);
+  switch (command) {
+    case 1:
+      drawerAnnouncement.value = true;
+      break;
+    case 2:
+      contentAnnouncement.content.splice(val,0,{
+        type: null,
+        text: '',
+        hyperlinks: '',
+        file: null,
+        pictureUrl: '',
+        pictureFit: true,
+        color: '',
+        fontSize: 10,
+        align: 'left',
+        width: 50,
+        height: 50,
+        displayMode: 0,
+        hyperlinksCss:{
+          target: '_blank',
+          underline: true
+        }
+      });
+      break;
+    case 3:
+      contentDelete(val);
+      break;
   }
 }
 const contentDelete = (val: number) => {
@@ -379,6 +424,7 @@ const contentAdd = () => {
     align: 'left',
     width: 50,
     height: 50,
+    displayMode: 0,
     hyperlinksCss:{
       target: '_blank',
       underline: true
@@ -609,23 +655,22 @@ onMounted(()=>{
       display: flex;
       overflow: hidden;
       .announcementSetUp{
-        width: 450px;
+        width: 60%;
         padding-top: 10px;
         height: 90%;
         border-radius: 20px;
-        margin: 3.5% 0 0 1%;
+        margin: 20px 0 0 10px;
         background-color: #f3f6fb;
       }
       .announcementPreview{
-        width: 250px;
+        width: calc(40% - 30px);
         height: 400px;
         border-radius: 20px;
-        margin: 10% 0 0 1%;
+        margin: 20px 0 0 10px;
         background-color: white;
         .preview-content{
           width: 96%;
           margin-left: 2%;
-          word-break: break-all;
         }
       }
       .announcement{

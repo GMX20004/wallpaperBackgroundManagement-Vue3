@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isPc" class="background" :style="{height:height}">
+  <div v-if="isPc" class="background" :style="{height:height,width:width}">
     <div v-if="isLogTo===1" class="system">
     <span class="menu">
       <div style="width: 100%;margin-top: 100%;">
@@ -36,7 +36,7 @@
     </span>
       <span class="window">
       <div class="accordingWindow">
-        <el-config-provider :locale="store.state.language===1?en:zhCn">
+        <el-config-provider :locale="store.state['language']===1?en:zhCn">
           <router-view v-slot="{ Component }" v-show="$route.meta['keepAlive']">
             <keep-alive>
               <component :is="Component"/>
@@ -108,6 +108,7 @@ const { $cookies } = proxy as any;
 const { $imgUrl } = proxy as any;
 const router = useRouter();
 let options = ref(0);
+let width = ref<string>(window.innerWidth<1200?'1200px':'100%')
 let height = ref<string>(window.innerHeight<700?'700px':'100%');
 const store = useStore();
 const isPc = ref<boolean>(true);
@@ -280,6 +281,11 @@ provide('modifyIsLogTo', (val:number) => {
  * 监视浏览器分辨率变化
  */
 window.onresize = function(){
+  if (window.innerWidth<1200){
+    width.value = '1200px';
+  }else{
+    width.value = '100%';
+  }
   if (window.innerHeight<700){
     height.value = '700px';
   }else{
