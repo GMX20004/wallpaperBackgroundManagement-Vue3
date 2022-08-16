@@ -25,8 +25,8 @@
 
 <script setup lang="ts">
 import {
-  inject,
-  reactive
+  inject, onMounted,
+  reactive, ref
 } from "vue";
 import router from "@/router";
 import { useStore } from  "vuex";
@@ -50,6 +50,7 @@ const { $http } = proxy as any;
 const { $file } = proxy as any;
 const store = useStore();
 const modifyIsLogTo:any = inject('modifyIsLogTo');
+const modifyDialogClass:any = inject('modifyDialogClass');
 // 日志
 const log = reactive<logInterface>({
   dialogVisible: false,
@@ -65,6 +66,7 @@ const log = reactive<logInterface>({
 const exitClick = () => {
   $cookies.remove('uuid');
   modifyIsLogTo(0);
+  modifyDialogClass(true);
   router.push({
     'path': '/'
   });

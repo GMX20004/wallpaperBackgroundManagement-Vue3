@@ -1,5 +1,5 @@
 <template>
-  <div class="homePage">
+  <div class="homePage" v-loading="mainLoading">
     <el-scrollbar style="height: 100%">
       <div class="head">
         <span>
@@ -164,6 +164,7 @@ let search = ref('');
 const headPortrait = $imgUrl+'/headPortrait/';
 const date = new Date();
 const time = ref<any>([]);
+const mainLoading = ref<boolean>(false);
 // 月份
 const monthEnglishFormat = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const calendarChoose = ref(1);
@@ -467,11 +468,15 @@ const permissionsLoading = ref<boolean>(false);
  * 方法区
  */
 
-const init = () => {
+const init = async () => {
+  mainLoading.value = true;
   let m = date.getMonth();
   let d = date.getDate();
   time.value.push(date.getFullYear()+'-'+(m+1<10?'0'+(m+1):m+1)+'-'+(d+1<10?'0'+d:d));
   time.value.push(monthEnglishFormat[m]+' '+(d+1<10?'0'+d:d)+','+date.getFullYear());
+  await obtainAccess(30);
+  await adminList();
+  mainLoading.value = false;
 }
 const handleCommand = (command: number) => {
   $http.get('/L/language',{
@@ -641,10 +646,9 @@ const gainPermissions = (uuid:string) => {
   })
 }
 onMounted(()=>{
+  mainLoading.value = true;
   if ($cookies.get('uuid')!==null){
     init();
-    obtainAccess(30);
-    adminList();
   }
 });
 onActivated(()=>{

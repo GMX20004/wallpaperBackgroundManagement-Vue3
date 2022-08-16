@@ -1,5 +1,5 @@
 <template>
-  <div class="user">
+  <div class="user" v-loading="mainLoading">
     <div class="main-body">
       <span class="body-left">
         <div class="user-list">
@@ -124,6 +124,7 @@ const { $imgUrl } = proxy as any;
 const { $http } = proxy as any;
 const { $cookies } = proxy as any;
 const store = useStore();
+const mainLoading = ref<boolean>(false);
 const headPortrait = $imgUrl+'/headPortrait/';
 const userIsFocus = ref<number>(0);
 const userListLoading = ref<boolean>(false);
@@ -144,6 +145,11 @@ const modifyParameter = reactive<modifyInterfacer>({
 /**
  * 方法区
  */
+const init = async () => {
+  mainLoading.value = true;
+  getUserList();
+  mainLoading.value = false;
+}
 const userFocus = (val:number) => {
   userList.value[userIsFocus.value]['isFocus'] = false;
   userIsFocus.value = val;
@@ -228,7 +234,7 @@ const modifySubmit = () => {
 }
 onMounted(()=>{
   if ($cookies.get('uuid')!==null){
-    getUserList();
+    init();
   }
 });
 </script>

@@ -9,7 +9,7 @@ import axios from 'axios';
 import * as echarts from 'echarts';
 import VueCookies from 'vue-cookies';
 import fileDownload from "js-file-download";
-axios.defaults.timeout = 5000;
+axios.defaults.timeout = 40000;
 axios.defaults.baseURL = 'http://101.43.88.137:9081';
 const imgUrl = 'http://101.43.88.137:9081/image/';
 const app = createApp(App);

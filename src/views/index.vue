@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isPc" class="background" :style="{height:height,width:width}">
+  <div v-if="isPc" class="background" :style="{height:height,width:width}" :class="dialogClass?'main-dialog':''">
     <div v-if="isLogTo===1" class="system">
     <span class="menu">
       <div style="width: 100%;margin-top: 100%;">
@@ -75,13 +75,43 @@
       <div style="width: 96%;margin:10px 0 0 2%;text-align: right"><span style="color: #2c95d4;cursor: pointer" @click="visitorsLogin">{{language===1?'Visitors to login':'游客登录'}}</span></div>
     </span>
     </div>
+    <el-dialog
+      v-model="isAnnouncement"
+      :title="store.state['announcement']['title']"
+      width="300px"
+      draggable
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      :show-close="false"
+      center>
+      <div class="preview-content">
+        <el-scrollbar style="width: 100%;height: 100%">
+          <div
+            v-for="(item,i) in store.state['announcement']['content']"
+            :key="i"
+            :style="{'text-align': item['align'],'display':item['displayMode']===0?'block':'inline','width':'100%'}">
+            <span v-if="item['type']===0" :style="{'color': item['color'],'font-size': item['fontSize']+'px'}">{{item['text']}}</span>
+            <el-image v-if="item['type']===1"
+                      :fit="item['pictureFit']?'scale-down':'fill'"
+                      :style="{'width':item['width']+'px','height':item['height']+'px'}"
+                      :src="item['pictureUrl']" />
+            <a v-if="item['type']===2" :href="item['hyperlinks']"
+               :style="{'color': item['color'],'font-size': item['fontSize']+'px','text-decoration':item['hyperlinksCss']['underline']?'':'none'}"
+               :target="item['hyperlinksCss']['target']">{{item['text']}}</a>
+          </div>
+        </el-scrollbar>
+      </div>
+      <template #footer>
+        <el-button style="width: 100%;border-radius: 0 0 20px 20px;height: 40px" type="primary" @click="isAnnouncement=false">{{store.state['language']===1?'OK':'确定'}}</el-button>
+      </template>
+    </el-dialog>
   </div>
   <div v-else style="width: 100%;height: 100%;text-align: center;padding-top: 30px;font-size: 20px">
     <b style="color: #2c95d4" @click="isPc=!isPc">页面暂不适配移动端，点我强行访问</b>
   </div>
 </template>
 <script setup lang="ts">
-import { inject, onMounted, provide, reactive, ref } from "vue";
+import { inject, onMounted, provide, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import zhCn from "element-plus/lib/locale/lang/zh-cn"
 import en from 'element-plus/lib/locale/lang/en';
@@ -135,6 +165,8 @@ const rules  = reactive<FormRules>({
   password:{  validator: validatePass, trigger: 'blur'}
 });
 const timing = ref<any>();
+const isAnnouncement = ref<boolean>(false);
+const dialogClass = ref<boolean>(false);
 /**
  * 方法区
  */
@@ -240,6 +272,7 @@ const userInformationQuery = () => {
           break;
       }
     }
+    if (store.state.announcement.is) isAnnouncement.value = true;
   });
 }
 const gainPermissions = () => {
@@ -259,6 +292,25 @@ const uuidCheck = () => {
     }
   },8000);
 }
+const announcement = () => {
+  dialogClass.value = true;
+  $http.get('/L/obtainAnnouncement').then((res1:any)=>{
+    if (res1.data['is']){
+      let content:any = [];
+      res1.data['content'].forEach((item:any)=>{
+        content.push(JSON.parse(item));
+      });
+      store.commit('modifyAnnouncement',{is:true,title:res1.data['title'],time:res1.data['time'],content:content});
+    }
+  });
+}
+watch(isAnnouncement,(newValue)=>{
+  if (!newValue){
+    setTimeout(() => {
+      dialogClass.value = false;
+    },1000);
+  }
+});
 onMounted(()=>{
   if ((navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i))) {
     isPc.value = false;
@@ -267,6 +319,7 @@ onMounted(()=>{
     userInformationQuery();
     gainPermissions();
   }else{
+    announcement();
     isLogTo.value = 0;
   }
   yzmQuery();
@@ -276,6 +329,9 @@ onMounted(()=>{
  */
 provide('modifyIsLogTo', (val:number) => {
   isLogTo.value = val;
+});
+provide('modifyDialogClass', (val:boolean) => {
+  dialogClass.value = val;
 });
 /**
  * 监视浏览器分辨率变化
@@ -360,6 +416,22 @@ window.onresize = function(){
         color: #2c95d4;
       }
     }
+  }
+}
+.main-dialog{
+  ::v-deep .el-dialog__body{
+    padding: 20px 10px 0 10px;
+  }
+  ::v-deep .el-dialog__footer{
+    padding: 0;
+  }
+  ::v-deep .el-dialog{
+    border-radius: 20px;
+  }
+  .preview-content{
+    width: 100%;
+    height: 350px;
+    margin-bottom: 10px;
   }
 }
 .color-black{

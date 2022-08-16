@@ -12,11 +12,7 @@
             <ul v-infinite-scroll="onlineLoad" :infinite-scroll-disabled="online.disabled">
               <li v-for="(item,i) in online.wallpaperList" :key="i" class="wallpaper-line">
                 <span v-for="(item1,p) in item" :key="p">
-                <el-image
-                  style="width: 100%;height: 100%;cursor: pointer"
-                  :src="$imgUrl+item1['storageLocation']+'/'+item1['id']+'.'+item1['type']"
-                  @click="onlineImage(item1['id'])"
-                  lazy/>
+                  <canvas style="cursor: pointer;width: 120px;height: 200px;" width="240" height="400" :ref="(el)=>wallpaperCanvas(el,item1)" @click="onlineImage(item1['id'])"/>
               </span>
               </li>
             </ul>
@@ -31,12 +27,8 @@
             <ul v-infinite-scroll="notOnlineLoad" :infinite-scroll-disabled="notOnline.disabled">
               <li v-for="(item,i) in notOnline.wallpaperList" :key="i" class="wallpaper-line">
                 <span v-for="(item1,p) in item" :key="p">
-                <el-image
-                  style="width: 100%;height: 100%;cursor: pointer"
-                  :src="$imgUrl+item1['storageLocation']+'/'+item1['id']+'.'+item1['type']"
-                  @click="onlineImage(item1['id'])"
-                  lazy/>
-              </span>
+                  <canvas style="cursor: pointer;width: 120px;height: 200px;" width="240" height="400" :ref="(el)=>wallpaperCanvas(el,item1)" @click="onlineImage(item1['id'])"/>
+                </span>
               </li>
             </ul>
             <p v-if="notOnline.loading">Loading...</p>
@@ -77,14 +69,11 @@
         </el-scrollbar>
       </div>
     </div>
-    <el-image-viewer v-if="batchUpload.dialogVisible" @close="batchUpload.dialogVisible=false" :url-list="[batchUpload.dialogImageUrl]"/>
-    <el-dialog v-model="dialog" v-loading="picture.loading" :before-close="exitReset" width="1000px">
-      <div class="dialog-body">
+    <el-image-viewer v-if="batchUpload.dialogVisible" @close="batchUpload.dialogVisible=false" hide-on-click-modal :url-list="[batchUpload.dialogImageUrl]"/>
+    <el-dialog v-model="dialog" width="1000px">
+      <div class="dialog-body" v-loading="picture.loading">
         <span class="dialog-body-left">
-          <el-image
-            style="width: 100%;height: 100%;"
-            fit="scale-down"
-            :src="$imgUrl+picture.details['storageLocation']+'/'+picture.details['id']+'.'+picture.details['type']"></el-image>
+          <canvas ref="imageCanvas"/>
         </span>
         <span class="dialog-body-right">
           <el-scrollbar style="width: 100%;height: 100%">
@@ -229,6 +218,7 @@ const wallpaperState = [
   {val:2,Chinese:'已上线',English:'Online'},
   {val:3,Chinese:'回收站',English:'Recycle bin'}
 ];
+const imageCanvas:any = ref();
 // 已上线
 const online = reactive<wallpaperInterface>({
   selected: 0,
@@ -339,31 +329,62 @@ const batchUpload = reactive<uploadInterface>({
     dialog.value = false;
   }
   const onlineImage = (id:any) =>{
-  picture.loading = true;
-  picture.id = id;
-  $http.post('/Wallpaper/wallpaper?'+Qs.stringify({
-    id:id
-  })).then((res:any)=>{
-    picture.details = res.data[0];
-    ruleForm.id = res.data[0]['id'];
-    ruleForm.title = res.data[0]['theTitle'];
-    if (res.data[0]['theLabel'].includes('.')){
-      ruleForm.label = res.data[0]['theLabel'].split('.');
+    dialog.value = true;
+    picture.loading = true;
+    if (picture.id === id){
+      picture.loading = false;
     }else{
-      ruleForm.label = res.data[0]['theLabel'].split(',');
+      picture.id = id;
+      $http.post('/Wallpaper/wallpaper?'+Qs.stringify({
+        id:id
+      })).then((res:any)=>{
+        picture.details = res.data[0];
+        ruleForm.id = res.data[0]['id'];
+        ruleForm.title = res.data[0]['theTitle'];
+        if (res.data[0]['theLabel'] !== null){
+          if (res.data[0]['theLabel'].includes('.')){
+            ruleForm.label = res.data[0]['theLabel'].split('.');
+          }else{
+            ruleForm.label = res.data[0]['theLabel'].split(',');
+          }
+        }else{
+          ruleForm.label = [];
+        }
+        ruleForm.storageLocation = res.data[0]['storageLocation'];
+        ruleForm.state = res.data[0]['state'];
+        drawing(imageCanvas.value,($imgUrl+picture.details['storageLocation']+'/'+picture.details['id']+'.'+picture.details['type']),300,480);
+      });
     }
-    ruleForm.storageLocation = res.data[0]['storageLocation'];
-    ruleForm.state = res.data[0]['state'];
-    picture.loading = false;
-  });
-  dialog.value = true;
 }
-  const exitReset = (done:any) => {
-    ruleForm.title = '';
-    ruleForm.label = [];
-    ruleForm.state = 0;
-    ruleForm.storageLocation = '';
-    done();
+  const drawing = (canvas:any,src:string, w:number, h:number) => {
+    let image = new Image();
+    image.src = src;
+    image.onload=function () {
+      if (image.width < w && image.height < h) {
+        canvas.style.width = image.width + "px";
+        canvas.style.height = image.height + "px";
+      } else {
+        if (w / h <= image.width / image.height) {
+          canvas.style.width = w + "px";
+          canvas.style.height = w * (image.height / image.width) + "px";
+        } else {
+          canvas.style.width = h * (image.width / image.height) + "px";
+          canvas.style.height = h + "px";
+        }
+      }
+      canvas.width = image.width;
+      canvas.height = image.height;
+      canvas.getContext('2d').drawImage(image,0,0,image.width,image.height);
+    }
+    picture.loading = false;
+  }
+  const wallpaperCanvas = (el:any,item:any) => {
+    let ctx = el.getContext('2d');
+    let cimg = new Image();
+    cimg.src = $imgUrl+item['storageLocation']+'/'+item['id']+'.'+item['type'];
+    cimg.onload=function () {
+      ctx.drawImage(cimg,0,0,240,400);
+    }
   }
 // 已上线
   const onlineLoad = () => {
@@ -516,7 +537,15 @@ const batchUpload = reactive<uploadInterface>({
       margin-left: 2%;
       .Project1-container{
         height: 100%;
-        overflow: auto;
+        width: 100%;
+        overflow-y: auto;
+        ul{
+          li{
+            span:first-child{
+              margin: 0;
+            }
+          }
+        }
       }
       p{
         width: 100%;
@@ -555,6 +584,7 @@ const batchUpload = reactive<uploadInterface>({
       width: 300px;
       height: 480px;
       margin: 10px;
+      text-align: center;
     }
     .dialog-body-right{
       width: calc(100% - 350px);

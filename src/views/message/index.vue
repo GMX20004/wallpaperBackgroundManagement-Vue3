@@ -1,5 +1,5 @@
 <template>
-  <div class="message">
+  <div class="message" v-loading="mainLoading">
     <span class="body-left">
       <div class="body-left-upper">
         <el-avatar style="width: 100px;height: 100px;" :src="headPortrait+store.state['userInformation']['headPortrait']"/>
@@ -14,7 +14,7 @@
       </div>
     </span>
     <span class="body-right">
-      <div v-if="messageType===1" class="body-right-Project-1">
+      <div v-show="messageType===1" class="body-right-Project-1">
           <span class="announcementSetUp">
             <el-scrollbar style="height: 100%">
               <div style="width: 96%;display: flex;margin: 20px 0 0 2%;">
@@ -25,6 +25,7 @@
                   inline-prompt
                   style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949"
                   active-text="Y"
+                  @change="announcementState"
                   inactive-text="N"
                 />
               </div>
@@ -35,6 +36,7 @@
                     v-model="contentAnnouncement.time"
                     type="datetimerange"
                     range-separator="To"
+                    value-format="YYYY-MM-DD HH:mm:ss"
                     :start-placeholder="store.state['language']===1?'Start date':'开始时间'"
                     :end-placeholder="store.state['language']===1?'End date':'结束时间'"
                   />
@@ -62,7 +64,8 @@
                           <el-input v-model="props.row.text" :placeholder="store.state['language']===1?'Input':'输入'" clearable></el-input>
                         </span>
                         <span v-else-if="props.row.type === 1">
-                          <div v-if="props.row.pictureUrl" style="width: 120px;height: 120px;border-radius: 20px;border: 1px solid #b1b4b9">
+                          <div v-show="props.row.pictureType===0">
+                            <div v-if="props.row.pictureUrl" style="width: 120px;height: 120px;border-radius: 20px;border: 1px solid #b1b4b9">
                             <div style="width: 90%;text-align: right;">
                               <svg t="1658497974158" style="cursor: pointer;" @click="handleRemove(props.$index)" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2266" width="10" height="10">
                                 <path d="M562.688 510.976l321.408-321.408a36.672 36.672 0 0 0-51.84-51.84l-321.28 321.28L189.568 137.6a36.672 36.672 0 0 0-51.84 51.84l321.28 321.536-321.408 321.28a36.672 36.672 0 0 0 51.84 51.84l321.536-321.408 321.408 321.472a36.672 36.672 0 0 0 51.84-51.84z" fill="#ff0000" p-id="2267"></path>
@@ -72,9 +75,13 @@
                             </teleport>
                             <el-image style="width: 80px;height: 80px;cursor: pointer" @click="handlePictureCardPreview(props.$index)" :src="props.row['pictureUrl']" fit="scale-down" />
                           </div>
-                          <el-upload v-show="!props.row.pictureUrl" ref="upload" action="#" list-type="picture" accept=".jpg,.png,.jpeg,.gif,.webp" :show-file-list="false" :auto-upload="false"  :on-change="(file,fileList)=>updateChange(file,fileList,props.$index)">
+                            <el-upload v-show="!props.row.pictureUrl" ref="upload" action="#" list-type="picture" accept=".jpg,.png,.jpeg,.gif,.webp" :show-file-list="false" :auto-upload="false"  :on-change="(file,fileList)=>updateChange(file,fileList,props.$index)">
                             <el-icon><Plus /></el-icon>
                           </el-upload>
+                          </div>
+                          <div v-show="props.row.pictureType===1">
+                            <el-input v-model="props.row.pictureUrl" :placeholder="store.state['language']===1?'Input link':'输入链接'" clearable></el-input>
+                          </div>
                         </span>
                         <span v-else-if="props.row.type === 2">
                           <el-input v-model="props.row.text" :placeholder="store.state['language']===1?'text':'文本'" clearable></el-input>
@@ -102,9 +109,17 @@
                     </el-table-column>
                   </el-table>
                   <el-button style="width: 80%;margin: 20px 0 0 10%" @click="contentAdd">{{store.state['language']===1?'Add':'新增'}}</el-button>
-                  <div style="width: 80%;margin: 20px 0 0 10%;text-align: center">
-                    <el-button @click="announcementCancel">{{store.state['language']===1?'Reset':'重置'}}</el-button>
-                    <el-button :disabled="store.state['permissions'] && store.state['permissions']['systemAnnouncement']===0" type="primary">{{store.state['language']===1?'Save':'保存'}}</el-button>
+                  <div style="width: 80%;margin: 20px 0 20px 10%;text-align: center">
+                    <el-button @click="announcementReset">{{store.state['language']===1?'Reset':'重置'}}</el-button>
+                    <el-button @click="announcementRestore">{{store.state['language']===1?'Restore':'恢复'}}</el-button>
+                    <el-button :disabled="(store.state['permissions'] && store.state['permissions']['systemAnnouncement']===0) || contentAnnouncement.loading" type="primary" @click="announcementSave">
+                      <el-icon style="vertical-align: middle" v-show="contentAnnouncement.loading">
+                        <Loading />
+                      </el-icon>
+                      <div v-show="!contentAnnouncement.loading">
+                        {{store.state['language']===1?'Save':'保存'}}
+                      </div>
+                    </el-button>
                   </div>
                 </div>
               </div>
@@ -133,7 +148,7 @@
             </div>
           </span>
        </div>
-      <div v-else-if="messageType===2" class="body-right-Project-2">
+      <div v-show="messageType===2" class="body-right-Project-2">
         <div class="important-div">
           <div style="width: 100%;">{{store.state['language']===1?'Recipient':'收件人'}}:</div>
           <div style="width: 100%;margin-top: 10px;display: flex">
@@ -187,7 +202,7 @@
         </div>
       </div>
     </span>
-    <el-image-viewer v-if="dialogVisible" @close="dialogVisible=false" :url-list="[dialogImageUrl]"/>
+    <el-image-viewer v-if="dialogVisible" hide-on-click-modal @close="dialogVisible=false" :url-list="[dialogImageUrl]"/>
     <el-drawer
       v-model="drawerAnnouncement"
       :title="store.state['language']===1?'More operations':'更多操作'"
@@ -218,6 +233,19 @@
         </div>
       </div>
       <div v-show="contentAnnouncement.content[current]['type']===1" style="width: 100%;">
+        <div class="drawer-div">
+          <span>{{store.state['language']===1?'UploadType':'上传类型'}}:</span>
+          <span>
+            <el-select v-model="contentAnnouncement.content[current]['pictureType']">
+              <el-option
+                v-for="item in pictureType"
+                :key="item.value"
+                :label="store.state['language']===1?item.English:item.Chinese"
+                :value="item.value">
+            </el-option>
+            </el-select>
+          </span>
+        </div>
         <div class="drawer-div">
           <span>{{store.state['language']===1?'Adaptive':'自适应'}}:</span>
           <span><el-checkbox v-model="contentAnnouncement.content[current]['pictureFit']"></el-checkbox></span>
@@ -281,7 +309,8 @@ import { useStore } from  "vuex";
 interface contentAnnouncementInterface{
   time: string[],
   title: string,
-  content: any[]
+  content: any[],
+  loading: boolean
 }
 interface importantParameterInterface{
   deliveryStatus: boolean,
@@ -307,15 +336,18 @@ const messageType = ref<number>(1);
 const alignOptions = [{English:'left',Chinese:'左',value: 0},{English:'right',Chinese:'右',value: 1},{English:'center',Chinese:'居中',value: 2}];
 const jumpWay = [{English:'Current Page Display',Chinese:'当前页面显示',value: '_self'},{English:'New page display',Chinese:'新页面显示',value: '_blank'},{English:'Corresponding window display',Chinese:'相应的窗口显示',value: 'three'}];
 const displayMode = [{label:'div',value: 0},{label:'span',value: 1}];
+const pictureType = [{English:'Local upload',Chinese:'本地上传',value: 0},{English:'Url link',Chinese:'Url链接',value: 1}];
+const mainLoading = ref<boolean>(true);
 // 系统公告
 const current = ref<number>(0);
 const isAnnouncement = ref<boolean>(false);
 let contentAnnouncement = reactive<contentAnnouncementInterface>({
   time: [],
   title: '',
-  content: []
+  content: [],
+  loading: false
 });
-const contentType = [{English:'Text',Chinese:'文本',value: 0},{English:'Picture',Chinese:'图片',value: 1},{English:'Hyperlinks',Chinese:'超链接',value: 2}];
+const contentType = [{English:'Placeholder',Chinese:'占位符',value: -1},{English:'Text',Chinese:'文本',value: 0},{English:'Picture',Chinese:'图片',value: 1},{English:'Hyperlinks',Chinese:'超链接',value: 2}];
 const dialogImageUrl = ref('');
 const dialogVisible = ref(false);
 const upload = ref<any>(null);
@@ -343,6 +375,13 @@ const dropDown = ref<boolean>(false);
  * 方法区
  */
 // 公共
+const init  = async () => {
+  mainLoading.value = true;
+  await obtainUserList();
+  await gainPermissions();
+  await announcement();
+  mainLoading.value = false;
+}
 const choose = (num:number) => {
   switch (num){
     case 1:
@@ -385,13 +424,14 @@ const handleCommand = (command: number, val: number) => {
       break;
     case 2:
       contentAnnouncement.content.splice(val,0,{
-        type: null,
+        type: -1,
         text: '',
         hyperlinks: '',
-        file: null,
+        pictureType: 0,
         pictureUrl: '',
         pictureFit: true,
         color: '',
+        file: null,
         fontSize: 10,
         align: 'left',
         width: 50,
@@ -413,11 +453,12 @@ const contentDelete = (val: number) => {
 }
 const contentAdd = () => {
   contentAnnouncement.content.push({
-    type: null,
+    type: -1,
     text: '',
     hyperlinks: '',
-    file: null,
+    pictureType: 0,
     pictureUrl: '',
+    file: null,
     pictureFit: true,
     color: '',
     fontSize: 10,
@@ -431,10 +472,72 @@ const contentAdd = () => {
     }
   });
 }
-const announcementCancel = () => {
+const announcementReset = () => {
   contentAnnouncement.time = [];
   contentAnnouncement.title = '';
   contentAnnouncement.content = [];
+}
+const announcementRestore = () => {
+  contentAnnouncement.time = store.state.announcement.time;
+  contentAnnouncement.title = store.state.announcement.title;
+  contentAnnouncement.content = JSON.parse(JSON.stringify(store.state.announcement.content));
+}
+const announcementSave = () => {
+  contentAnnouncement.loading = true;
+  for(let i in contentAnnouncement.content){
+    if (contentAnnouncement.content[i]['type']===1 && contentAnnouncement.content[i]['pictureType']===0 && contentAnnouncement.content[i]['file']===null){
+      ElMessage({
+        message: store.state['language']===1?'The lack of pictures file.':'图片文件缺失',
+        type: 'warning',
+      });
+      contentAnnouncement.loading = false;
+      return;
+    }
+  }
+  let fileFormData = new FormData();
+  contentAnnouncement.content.forEach(item=>{
+    if (item['type']===1 && item['pictureType']===0){
+      fileFormData.append('fileList',item['file']);
+    }
+    fileFormData.append('content',JSON.stringify({
+      type: item['type'],
+      text: item['text'],
+      pictureType: item['pictureType'],
+      hyperlinks: item['hyperlinks'],
+      pictureFit: item['pictureFit'],
+      color: item['color'],
+      file: null,
+      pictureUrl: item['pictureType']===0?'':item['pictureUrl'],
+      fontSize: item['fontSize'],
+      align: item['align'],
+      width: item['width'],
+      height: item['height'],
+      displayMode: item['displayMode'],
+      hyperlinksCss:item['hyperlinksCss']
+    }));
+  });
+  fileFormData.append('title',contentAnnouncement.title);
+  fileFormData.append('startTime',contentAnnouncement.time[0]);
+  fileFormData.append('endTime',contentAnnouncement.time[1]);
+  fileFormData.append('uuid',$cookies.get('uuid'));
+  $http.post('/L/addAnnouncement',fileFormData).then((res:any)=>{
+    if (res.data){
+      ElMessage({
+        message: store.state['language']===1?'Save success':'保存成功',
+        type: 'success',
+      });
+      $http.get('/L/obtainAnnouncement').then((res1:any)=>{
+        let content:any = [];
+        res1.data['content'].forEach((item:any)=>{
+          content.push(JSON.parse(item));
+        });
+        store.commit('modifyAnnouncement',{is:true,title:res1.data['title'],time:res1.data['time'],content:content});
+      });
+    }else{
+      ElMessage.error(store.state['language']===1?'Failed,Please try again later':'失败，请稍后再试');
+    }
+    contentAnnouncement.loading = false;
+  });
 }
 const updateChange = (file: any, fileList: any, num: number) => {
   if (!/\.(jpg|png|jpeg|gif|webp)$/.test(file.name)) {
@@ -442,6 +545,10 @@ const updateChange = (file: any, fileList: any, num: number) => {
     fileList.splice(0, 1);
     return;
   } else {
+    if (file.size>3145728){
+      ElMessage.error(file.name+(store.state['language']===1?' Greater than':' 大于')+'3MB');
+      fileList.splice(0, 1);
+    }
     if (fileList.length === 2)
       fileList.splice(0, 1);
     contentAnnouncement.content[num]['file'] = file.raw;
@@ -457,6 +564,28 @@ const handleRemove = (num: number) => {
 const handlePictureCardPreview = (num: number) => {
   dialogImageUrl.value = contentAnnouncement.content[num]['pictureUrl'];
   dialogVisible.value = true
+}
+const announcement = () => {
+  $http.get('/L/obtainAnnouncement').then((res1:any)=>{
+    if (res1.data['is']){
+      let content:any = [];
+      res1.data['content'].forEach((item:any)=>{
+        content.push(JSON.parse(item));
+      });
+      store.commit('modifyAnnouncement',{is:true,title:res1.data['title'],time:res1.data['time'],content:content});
+      isAnnouncement.value = true;
+      announcementRestore();
+    }
+  });
+}
+const announcementState = (is:boolean) => {
+  if (is) announcementRestore();
+  $http.get('/L/isAnnouncement',{
+    params:{
+      is:is
+    }
+  });
+  store.state.announcement.is = is;
 }
 // 重要通知
 const importantInit = () => {
@@ -556,8 +685,7 @@ const obtainUserList = () => {
  */
 onMounted(()=>{
   if ($cookies.get('uuid')!==null){
-    obtainUserList();
-    gainPermissions();
+    init();
   }
 });
 </script>
