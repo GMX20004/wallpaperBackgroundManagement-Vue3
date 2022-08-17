@@ -582,7 +582,8 @@ const announcementState = (is:boolean) => {
   if (is) announcementRestore();
   $http.get('/L/isAnnouncement',{
     params:{
-      is:is
+      is:is,
+      userId:store.state.userInformation['id']
     }
   });
   store.state.announcement.is = is;

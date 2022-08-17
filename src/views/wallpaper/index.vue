@@ -70,7 +70,7 @@
       </div>
     </div>
     <el-image-viewer v-if="batchUpload.dialogVisible" @close="batchUpload.dialogVisible=false" hide-on-click-modal :url-list="[batchUpload.dialogImageUrl]"/>
-    <el-dialog v-model="dialog" width="1000px">
+    <el-dialog v-model="dialog" width="1000px" :before-close="(done)=>dialogClose(done,ruleFormRef)">
       <div class="dialog-body" v-loading="picture.loading">
         <span class="dialog-body-left">
           <canvas ref="imageCanvas"/>
@@ -136,6 +136,7 @@
             <div style="width: 100%;text-align: center">
               <el-button @click="cancel(ruleFormRef)">{{store.state['language']===1?'Cancel':'取消'}}</el-button>
               <el-button type="primary" :disabled="(store.state['permissions']['onlineWallpaperModify']===0 && Select===0) || (store.state['permissions']['notOnlineWallpaperModify']===0 && Select===1)" @click="submit(ruleFormRef)">{{store.state['language']===1?'Save':'保存'}}</el-button>
+              <el-icon size="20px" color="#2c95d4" style="position: relative;left: 200px;top:10px;cursor: pointer" @click="downloaded"><Download /></el-icon>
             </div>
           </el-scrollbar>
         </span>
@@ -162,6 +163,7 @@ interface ruleFormInterface{
   title: string,
   label: string[],
   state: number,
+  type: string,
   storageLocation: string
 }
 interface wallpaperInterface{
@@ -188,6 +190,7 @@ const proxy = inject("proxy");
 const { $imgUrl } = proxy as any;
 const { $http } = proxy as any;
 const { $cookies } = proxy as any;
+const { $file } = proxy as any;
 const store = useStore();
 let Select = ref<number>(0);
 const dialog = ref<boolean>(false);
@@ -202,7 +205,8 @@ const ruleForm = reactive<ruleFormInterface>({
   title: '',
   label: [],
   state: 0,
-  storageLocation: ''
+  type: '',
+  storageLocation: '',
 });
 const rules  = reactive<FormRules>({
   title:{ required: true, message: 'Please input Activity name', trigger: 'blur' },
@@ -218,6 +222,7 @@ const wallpaperState = [
   {val:2,Chinese:'已上线',English:'Online'},
   {val:3,Chinese:'回收站',English:'Recycle bin'}
 ];
+let wallpaperRef:any = {}
 const imageCanvas:any = ref();
 // 已上线
 const online = reactive<wallpaperInterface>({
@@ -229,7 +234,7 @@ const online = reactive<wallpaperInterface>({
   loading:false,
   form:{
     page:1,
-    limit:30
+    limit:18
   }
 });
 // 未上线
@@ -242,7 +247,7 @@ const notOnline = reactive<wallpaperInterface>({
   loading:false,
   form:{
     page:1,
-    limit:30,
+    limit:18,
     uuid:$cookies.get('uuid')
   }
 });
@@ -321,17 +326,21 @@ const batchUpload = reactive<uploadInterface>({
   }
   const cancel = (formEl: FormInstance | undefined) => {
     if (!formEl) return;
+    let title = ruleForm.title;
+    let label = ruleForm.label;
+    let state = ruleForm.state;
+    let storageLocation = ruleForm.storageLocation;
     formEl.resetFields()
-    ruleForm.title = '';
-    ruleForm.label = [];
-    ruleForm.state = 0;
-    ruleForm.storageLocation = '';
+    ruleForm.title = title;
+    ruleForm.label = label;
+    ruleForm.state = state;
+    ruleForm.storageLocation = storageLocation;
     dialog.value = false;
   }
   const onlineImage = (id:any) =>{
     dialog.value = true;
     picture.loading = true;
-    if (picture.id === id){
+    if (picture.id === id && ruleForm.id === id){
       picture.loading = false;
     }else{
       picture.id = id;
@@ -341,6 +350,7 @@ const batchUpload = reactive<uploadInterface>({
         picture.details = res.data[0];
         ruleForm.id = res.data[0]['id'];
         ruleForm.title = res.data[0]['theTitle'];
+        ruleForm.type = res.data[0]['type'];
         if (res.data[0]['theLabel'] !== null){
           if (res.data[0]['theLabel'].includes('.')){
             ruleForm.label = res.data[0]['theLabel'].split('.');
@@ -352,30 +362,27 @@ const batchUpload = reactive<uploadInterface>({
         }
         ruleForm.storageLocation = res.data[0]['storageLocation'];
         ruleForm.state = res.data[0]['state'];
-        drawing(imageCanvas.value,($imgUrl+picture.details['storageLocation']+'/'+picture.details['id']+'.'+picture.details['type']),300,480);
+        drawing(imageCanvas.value,id,300,480);
       });
     }
 }
-  const drawing = (canvas:any,src:string, w:number, h:number) => {
-    let image = new Image();
-    image.src = src;
-    image.onload=function () {
-      if (image.width < w && image.height < h) {
-        canvas.style.width = image.width + "px";
-        canvas.style.height = image.height + "px";
+  const drawing = (canvas:any,id:string, w:number, h:number) => {
+    let image = wallpaperRef['ref'+id];
+    if (image.width < w && image.height < h) {
+      canvas.style.width = image.width + "px";
+      canvas.style.height = image.height + "px";
+    } else {
+      if (w / h <= image.width / image.height) {
+        canvas.style.width = w + "px";
+        canvas.style.height = w * (image.height / image.width) + "px";
       } else {
-        if (w / h <= image.width / image.height) {
-          canvas.style.width = w + "px";
-          canvas.style.height = w * (image.height / image.width) + "px";
-        } else {
-          canvas.style.width = h * (image.width / image.height) + "px";
-          canvas.style.height = h + "px";
-        }
+        canvas.style.width = h * (image.width / image.height) + "px";
+        canvas.style.height = h + "px";
       }
-      canvas.width = image.width;
-      canvas.height = image.height;
-      canvas.getContext('2d').drawImage(image,0,0,image.width,image.height);
     }
+    canvas.width = image.width;
+    canvas.height = image.height;
+    canvas.getContext('2d').drawImage(image,0,0,image.width,image.height);
     picture.loading = false;
   }
   const wallpaperCanvas = (el:any,item:any) => {
@@ -385,6 +392,32 @@ const batchUpload = reactive<uploadInterface>({
     cimg.onload=function () {
       ctx.drawImage(cimg,0,0,240,400);
     }
+    wallpaperRef['ref'+item['id']] = cimg;
+  }
+  const dialogClose = (done:any,formEl: FormInstance | undefined) => {
+    if (!formEl) return;
+    let title = ruleForm.title;
+    let label = ruleForm.label;
+    let state = ruleForm.state;
+    let storageLocation = ruleForm.storageLocation;
+    formEl.resetFields()
+    ruleForm.title = title;
+    ruleForm.label = label;
+    ruleForm.state = state;
+    ruleForm.storageLocation = storageLocation;
+    done();
+  }
+  const downloaded = () => {
+    let time = Date.now();
+    $http.get('/L/downloadWallpaper',{
+      responseType: 'blob',
+      params:{
+        id:ruleForm.id,
+        time:time
+      }
+    }).then((res:any)=>{
+      $file(res.data, time+'.'+ruleForm.type);
+    })
   }
 // 已上线
   const onlineLoad = () => {
@@ -402,7 +435,7 @@ const batchUpload = reactive<uploadInterface>({
       params: online.form
     }).then((res:any)=>{
       let temporary = [];
-      if (res.data['data'].length<30)online.disabled = true;
+      if (res.data['data'].length<online.form['limit'])online.disabled = true;
       online.loading = false;
       for (let i=0;i<res.data['data'].length;i++){
         temporary.push(res.data['data'][i]);
@@ -435,7 +468,7 @@ const batchUpload = reactive<uploadInterface>({
       params: notOnline.form
     }).then((res:any)=>{
       let temporary = [];
-      if (res.data['data'].length<30)notOnline.disabled = true;
+      if (res.data['data'].length<notOnline.form['limit'])notOnline.disabled = true;
       notOnline.loading = false;
       for (let i=0;i<res.data['data'].length;i++){
         temporary.push(res.data['data'][i]);

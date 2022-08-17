@@ -191,6 +191,7 @@ const data = reactive<any>({
         name: store.state['language']===1?'Wallpaper number':'壁纸数量',
         type: 'pie',
         radius: ['40%', '70%'],
+        center: ['60%','50%'],
         avoidLabelOverlap: false,
         itemStyle: {
           borderRadius: 10,

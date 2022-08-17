@@ -25,8 +25,8 @@
 
 <script setup lang="ts">
 import {
-  inject, onMounted,
-  reactive, ref
+  inject,
+  reactive,
 } from "vue";
 import router from "@/router";
 import { useStore } from  "vuex";
