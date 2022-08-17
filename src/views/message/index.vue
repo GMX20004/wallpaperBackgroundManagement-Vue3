@@ -16,7 +16,7 @@
     <span class="body-right">
       <div v-show="messageType===1" class="body-right-Project-1">
           <span class="announcementSetUp">
-            <el-scrollbar style="height: 100%">
+            <el-scrollbar style="height: calc(100% - 10px)">
               <div style="width: 96%;display: flex;margin: 20px 0 0 2%;">
                 <span style="line-height: 30px;margin-right: 20px">{{store.state['language']===1?'Whether to enable:':'是否启用:'}}</span>
                 <el-switch
@@ -134,13 +134,13 @@
                   v-for="(item,i) in contentAnnouncement.content"
                   :key="i"
                   :style="{'text-align': item['align'],'display':item['displayMode']===0?'block':'inline','width':'100%'}">
-                  <span v-if="item['type']===0" :style="{'color': item['color'],'font-size': item['fontSize']+'px'}">{{item['text']}}</span>
+                  <span style="display: inline-block" v-if="item['type']===0" :style="{'color': item['color'],'font-size': item['fontSize']<10?'10px':item['fontSize']+'px','transform':item['fontSize']<10?'scale(0.'+item['fontSize']+')':'scale(1)'}">{{item['text']}}</span>
                   <el-image v-if="item['type']===1"
                             :fit="item['pictureFit']?'scale-down':'fill'"
                             :style="{'width':item['width']+'px','height':item['height']+'px'}"
                             :src="item['pictureUrl']" />
-                  <a v-if="item['type']===2" :href="item['hyperlinks']"
-                     :style="{'color': item['color'],'font-size': item['fontSize']+'px','text-decoration':item['hyperlinksCss']['underline']?'':'none'}"
+                  <a style="display: inline-block" v-if="item['type']===2" :href="item['hyperlinks']"
+                     :style="{'color': item['color'],'font-size': item['fontSize']<10?'10px':item['fontSize']+'px','text-decoration':item['hyperlinksCss']['underline']?'':'none','transform':item['fontSize']<10?'scale(0.'+item['fontSize']+')':'scale(1)'}"
                      :target="item['hyperlinksCss']['target']">{{item['text']}}</a>
                 </div>
               </div>

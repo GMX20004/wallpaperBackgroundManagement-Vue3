@@ -90,13 +90,13 @@
             v-for="(item,i) in store.state['announcement']['content']"
             :key="i"
             :style="{'text-align': item['align'],'display':item['displayMode']===0?'block':'inline','width':'100%'}">
-            <span v-if="item['type']===0" :style="{'color': item['color'],'font-size': item['fontSize']+'px'}">{{item['text']}}</span>
+            <span style="display: inline-block" v-if="item['type']===0" :style="{'color': item['color'],'font-size': item['fontSize']<10?'10px':item['fontSize']+'px','transform':item['fontSize']<10?'scale(0.'+item['fontSize']+')':'scale(1)'}">{{item['text']}}</span>
             <el-image v-if="item['type']===1"
                       :fit="item['pictureFit']?'scale-down':'fill'"
                       :style="{'width':item['width']+'px','height':item['height']+'px'}"
                       :src="item['pictureUrl']" />
-            <a v-if="item['type']===2" :href="item['hyperlinks']"
-               :style="{'color': item['color'],'font-size': item['fontSize']+'px','text-decoration':item['hyperlinksCss']['underline']?'':'none'}"
+            <a style="display: inline-block" v-if="item['type']===2" :href="item['hyperlinks']"
+               :style="{'color': item['color'],'font-size': item['fontSize']<10?'10px':item['fontSize']+'px','text-decoration':item['hyperlinksCss']['underline']?'':'none','transform':item['fontSize']<10?'scale(0.'+item['fontSize']+')':'scale(1)'}"
                :target="item['hyperlinksCss']['target']">{{item['text']}}</a>
           </div>
         </el-scrollbar>
