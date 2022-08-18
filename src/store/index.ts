@@ -2,6 +2,8 @@ import { createStore } from 'vuex';
 
 export default createStore({
   state: {
+    displayMode: false,
+    nightColor: '#7a7a7a',
     language: 1,// 语言
     permissions:{},// 权限
     userInformation:{},// 登录人信息
@@ -14,6 +16,9 @@ export default createStore({
   },
   getters: {},
   mutations: {
+    modifyDisplayMode(state,{ val }){
+      state.displayMode = val;
+    },
     modifyLanguage(state,{ val }){
       state.language = val;
     },

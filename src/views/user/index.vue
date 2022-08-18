@@ -1,5 +1,5 @@
 <template>
-  <div class="user" v-loading="mainLoading">
+  <div class="user" v-loading="mainLoading" :class="store.state['displayMode']?'night':'daytime'">
     <div class="main-body">
       <span class="body-left">
         <div class="user-list">
@@ -8,9 +8,9 @@
             <div class="user-information" v-for="(item,i) in userList" tabindex="-1" :key="i" @focus="userFocus(i)" :class="[item['isFocus']?'userColor':'']">
               <el-avatar style="width: 30px;height: 30px;margin: 5px 0 0 10px" :src="headPortrait+item['headPortrait']"/>
               <span style="width: 10%;">{{item['name']}}</span>
-              <span style="color: #8d8d8d;width: 30%;">{{item['email']}}</span>
-              <span style="color: #8d8d8d;width: calc(10% - 20px);">{{item['sex']}}</span>
-              <span style="color: #8d8d8d;width: 50%;">最近登入时间：{{item['recentLogin']}}</span>
+              <span style="width: 30%;" class="text-color">{{item['email']}}</span>
+              <span style="width: calc(10% - 20px);" class="text-color">{{item['sex']}}</span>
+              <span style="width: 50%;" class="text-color">最近登入时间：{{item['recentLogin']}}</span>
             </div>
           </el-scrollbar>
           </div>
@@ -27,7 +27,7 @@
           />
         </div>
       </span>
-      <span v-if="userList[userIsFocus]" class="body-right">
+      <span v-if="userList[userIsFocus]" class="body-right userColor">
         <div  style="width: 100%;height: 50%;overflow: hidden">
           <div style="width: 96%;margin-left: 2%;text-align: right;height: 15%">
             <el-dropdown trigger="click" placement="bottom-end" @command="handleCommand">
@@ -50,23 +50,23 @@
           <div style="width: 96%;margin-left: 2%;text-align: center;height: 20%;">
             <el-tag class="ml-2" type="danger">{{store.state['language']===1?'praise':'获赞'}}:{{userList[userIsFocus]['praise']}}</el-tag>
             <el-tag class="ml-2" type="warning">{{store.state['language']===1?'fans':'粉丝'}}:{{userList[userIsFocus]['fans']}}</el-tag>
-            <el-tag class="ml-2" type="info">{{store.state['language']===1?'attention':'关注'}}:{{userList[userIsFocus]['focusOn']}}</el-tag>
-            <el-tag>{{store.state['language']===1?'contribute':'投稿'}}:{{userList[userIsFocus]['contribute']}}</el-tag>
+            <el-tag class="ml-2" type="info">{{store.state['language']===1?'focus':'关注'}}:{{userList[userIsFocus]['focusOn']}}</el-tag>
+            <el-tag>{{store.state['language']===1?'share':'分享'}}:{{userList[userIsFocus]['contribute']}}</el-tag>
           </div>
         </div>
         <div style="width: 100%;height: 50%">
-          <div class="body-right-text">{{store.state['language']===1?'gender':'性别'}}：{{userList[userIsFocus]['sex']}}</div>
+          <div class="body-right-text text-color">{{store.state['language']===1?'gender':'性别'}}：{{userList[userIsFocus]['sex']}}</div>
           <el-tooltip
             class="box-item"
             effect="dark"
             :content="userList[userIsFocus]['instructions']"
             placement="top"
           >
-            <div class="body-right-text">{{store.state['language']===1?'Individuality signature':'个性签名'}}：{{userList[userIsFocus]['instructions'].length>8?userList[userIsFocus]['instructions'].slice(0,8)+'...':userList[userIsFocus]['instructions']}}</div>
+            <div class="body-right-text text-color">{{store.state['language']===1?'Individuality signature':'个性签名'}}：{{userList[userIsFocus]['instructions'].length>8?userList[userIsFocus]['instructions'].slice(0,8)+'...':userList[userIsFocus]['instructions']}}</div>
           </el-tooltip>
-          <div class="body-right-text">{{store.state['language']===1?'email':'邮箱'}}：{{userList[userIsFocus]['email']}}</div>
-          <div class="body-right-text">{{store.state['language']===1?'Last login time':'最后登入时间'}}：{{userList[userIsFocus]['recentLogin']}}</div>
-          <div class="body-right-text">{{store.state['language']===1?'Creation time':'创建时间'}}：{{userList[userIsFocus]['creationTime']}}</div>
+          <div class="body-right-text text-color">{{store.state['language']===1?'email':'邮箱'}}：{{userList[userIsFocus]['email']}}</div>
+          <div class="body-right-text text-color">{{store.state['language']===1?'Last login time':'最后登入时间'}}：{{userList[userIsFocus]['recentLogin']}}</div>
+          <div class="body-right-text text-color">{{store.state['language']===1?'Creation time':'创建时间'}}：{{userList[userIsFocus]['creationTime']}}</div>
         </div>
       </span>
     </div>
@@ -244,6 +244,7 @@ onMounted(()=>{
   width: 100%;
   height: 100%;
   display: flex;
+  user-select: none;
   .main-body{
     width: 100%;
     height: 100%;
@@ -282,18 +283,44 @@ onMounted(()=>{
       height: 100%;
       margin-left: 20px;
       border-radius: 20px;
-      background-color: #f3f6fb;
       overflow: hidden;
       .body-right-text{
         width: 96%;
         height: 20%;
         margin-left: 2%;
-        color: #8d8d8d;
       }
     }
   }
+}
+.daytime{
   .userColor{
     background-color: #f3f6fb;
+  }
+  .text-color{
+    color: #8d8d8d;
+  }
+}
+.night{
+  ::v-deep .el-input__wrapper{
+    background-color: #7a7a7a;
+  }
+  ::v-deep .el-pagination__total{
+    color: white;
+  }
+  .userColor{
+    background-color: #7a7a7a;
+  }
+  .text-color{
+    color: #ffffff;
+  }
+  ::v-deep .is-active{
+    background-color: #545454;
+  }
+  ::v-deep .btn-next{
+    background-color: #545454;
+  }
+  ::v-deep .el-dialog{
+    background-color: #7a7a7a;
   }
 }
 </style>

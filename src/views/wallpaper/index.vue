@@ -1,5 +1,5 @@
 <template>
-  <div class="message">
+  <div class="message" :class="store.state['displayMode']?'night':'daytime'">
     <div class="body-hierarchy1">
       <el-button :type="Select===0?'primary':''" @click="SelectButton(0)">{{store.state['language']===1?'Online wallpaper':'已上线'}}</el-button>
       <el-button :type="Select===1?'primary':''" @click="SelectButton(1)">{{store.state['language']===1?'Not online wallpaper':'未上线'}}</el-button>
@@ -549,6 +549,7 @@ const batchUpload = reactive<uploadInterface>({
 .message{
   width: 100%;
   height: 100%;
+  user-select: none;
   .body-hierarchy1{
     width: 100%;
     text-align: center;
@@ -630,6 +631,16 @@ const batchUpload = reactive<uploadInterface>({
     }
   }
 }
+.daytime{
 
+}
+.night{
+  ::v-deep .el-input__wrapper{
+    background-color: #7a7a7a;
+  }
+  ::v-deep .el-dialog{
+    background-color: #7a7a7a;
+  }
+}
 </style>
 

@@ -1,10 +1,10 @@
 <template>
-  <div class="homePage" v-loading="mainLoading">
+  <div class="homePage" :class="store.state['displayMode']?'night':'daytime'" v-loading="mainLoading">
     <el-scrollbar style="height: 100%">
       <div class="head">
         <span>
           <b>{{store.state['language']===1?'Dashboard':'仪表板'}}</b>
-          <el-input v-model="search" class="w-50 m-2" :placeholder="store.state['language']===1?'Search':'搜索'" clearable>
+          <el-input v-model="search" :placeholder="store.state['language']===1?'Search':'搜索'" clearable>
             <template #prefix>
               <el-icon class="el-input__icon"><Search /></el-icon>
             </template>
@@ -90,7 +90,7 @@
             </span>
           </div>
         </span>
-        <span class="body-right">
+        <span class="body-right administratorColor">
           <div class="body-right-hierarchy1"><b>{{store.state['language']===1?'Information bar':'信息栏'}}</b></div>
           <div class="body-right-hierarchy2">
             <el-scrollbar style="height: 100%">
@@ -661,6 +661,7 @@ onActivated(()=>{
 .homePage {
   width: 100%;
   height: 100%;
+  user-select: none;
   .head{
     width: 100%;
     height: 40px;
@@ -741,7 +742,7 @@ onActivated(()=>{
           border: 1px solid #dedede;
           cursor:pointer;
           margin-bottom: 10px;
-          line-height: 70px;
+          line-height: 60px;
           text-align: center;
           font-size: 20px;
           .calendar-span1{
@@ -763,7 +764,6 @@ onActivated(()=>{
       width: 30%;
       margin-left: 20px;
       height: 495px;
-      background-color: #f3f6fb;
       border-radius: 20px;
       .body-right-hierarchy1{
         width: 80%;
@@ -794,12 +794,25 @@ onActivated(()=>{
   b{
     font-size: 20px;
   }
-  .administratorColor{
-    background-color: #f3f6fb;
-  }
   .background-black{
     color: white;
     background-color: black;
+  }
+}
+.daytime{
+  .administratorColor{
+    background-color: #f3f6fb;
+  }
+}
+.night{
+  ::v-deep .el-input__wrapper{
+    background-color: #7a7a7a;
+  }
+  ::v-deep .el-button{
+    background-color: #7a7a7a;
+  }
+  .administratorColor{
+    background-color: #7a7a7a;
   }
 }
 </style>

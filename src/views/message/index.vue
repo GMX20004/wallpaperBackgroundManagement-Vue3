@@ -1,5 +1,5 @@
 <template>
-  <div class="message" v-loading="mainLoading">
+  <div class="message" v-loading="mainLoading" :class="store.state['displayMode']?'night':'daytime'">
     <span class="body-left">
       <div class="body-left-upper">
         <el-avatar style="width: 100px;height: 100px;" :src="headPortrait+store.state['userInformation']['headPortrait']"/>
@@ -704,10 +704,10 @@ onMounted(()=>{
   width: 100%;
   height: 100%;
   display: flex;
+  user-select: none;
   .body-left{
     width: 300px;
     height: 100%;
-    background-color: #f3f6fb;
     border-radius: 20px;
     .body-left-upper{
       width: 96%;
@@ -719,7 +719,6 @@ onMounted(()=>{
       width: 80%;
       margin: 20px 0 0 10%;
       height: calc(100% - 200px);
-      background-color: white;
       border-radius: 20px;
       .body-left-list{
         width: 96%;
@@ -788,7 +787,6 @@ onMounted(()=>{
       width: 100%;
       height: 100%;
       border-radius: 20px;
-      background-color: #b1b4b9;
       display: flex;
       overflow: hidden;
       .announcementSetUp{
@@ -797,7 +795,6 @@ onMounted(()=>{
         height: 90%;
         border-radius: 20px;
         margin: 20px 0 0 10px;
-        background-color: #f3f6fb;
       }
       .announcementPreview{
         width: calc(40% - 30px);
@@ -865,12 +862,70 @@ onMounted(()=>{
       line-height: 40px;
     }
   }
-  .pitch-on{
-    background-color: black;
-    color: white;
+}
+.daytime {
+  .body-left {
+    background-color: #f3f6fb;
+    .body-left-lower {
+      background-color: white;
+    }
+    .pitch-on {
+      background-color: black;
+      color: white;
+    }
+    .uncheck {
+      background-color: #b1b4b9;
+    }
   }
-  .uncheck{
-    background-color: #b1b4b9;
+  .body-right {
+    .body-right-Project-1{
+      background-color: #b1b4b9;
+      .announcementSetUp{
+        background-color: #f3f6fb;
+      }
+    }
+  }
+}
+.night{
+  .body-left{
+    background-color: #7a7a7a;
+    .body-left-upper{
+      color: white;
+    }
+    .body-left-lower{
+      background-color: black;
+    }
+    .pitch-on{
+      background-color: #b1b4b9;
+    }
+    .uncheck{
+      background-color: black;
+      color: white;
+    }
+  }
+  .body-right {
+    .body-right-Project-1{
+      background-color: #000000;
+      .announcementSetUp{
+        background-color: #7a7a7a;
+        ::v-deep .el-input__wrapper{
+          background-color: #9d9d9d;
+        }
+        ::v-deep .el-table td.el-table__cell{
+          background-color: #9d9d9d;
+        }
+        ::v-deep .el-table th.el-table__cell.is-leaf{
+          background-color: #9d9d9d;
+          color: white;
+        }
+        ::v-deep .el-button{
+          background-color: #9d9d9d;
+        }
+        ::v-deep .el-button--primary{
+          background-color: #2c95d4;
+        }
+      }
+    }
   }
 }
 </style>

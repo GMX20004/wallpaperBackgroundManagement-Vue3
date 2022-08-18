@@ -1,5 +1,5 @@
 <template>
-  <div class="setUp">
+  <div class="setUp" :class="store.state['displayMode']?'night':'daytime'">
     <el-scrollbar style="height: 100%">
       <el-button style="width: 100px;margin-left: 50px" type="primary" round @click="viewLogClick" :disabled="store.state['permissions']['logView']===0">{{store.state['language']===1?'View log':'查看日志'}}</el-button>
       <el-button style="width: 100px;margin-left: 50px" type="danger" round @click="exitClick">{{store.state['language']===1?'Exit':'退出'}}</el-button>
@@ -109,8 +109,35 @@ const logExport = () => {
 .setUp{
   width: 100%;
   height: 100%;
+  user-select: none;
   ::v-deep .el-pagination{
     justify-content: right;
+  }
+}
+.daytime{
+
+}
+.night{
+  ::v-deep .el-input__wrapper{
+    background-color: #7a7a7a;
+  }
+  ::v-deep .el-dialog{
+    background-color: #7a7a7a;
+  }
+  ::v-deep .btn-prev{
+    background-color: #7a7a7a;
+  }
+  ::v-deep .btn-next{
+    background-color: #7a7a7a;
+  }
+  ::v-deep .number{
+    background-color: #7a7a7a;
+  }
+  ::v-deep .more{
+    background-color: #7a7a7a;
+  }
+  ::v-deep .number{
+    background-color: #7a7a7a;
   }
 }
 </style>
