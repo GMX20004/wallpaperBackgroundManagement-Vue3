@@ -300,7 +300,7 @@ const announcement = () => {
       res1.data['content'].forEach((item:any)=>{
         content.push(JSON.parse(item));
       });
-      store.commit('modifyAnnouncement',{is:true,title:res1.data['title'],time:res1.data['time'],content:content});
+      store.commit('modifyAnnouncement',{is:res1.data['open'],title:res1.data['title'],time:res1.data['time'],content:content});
     }
   });
 }

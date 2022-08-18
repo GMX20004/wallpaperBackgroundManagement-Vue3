@@ -307,7 +307,7 @@ import { useStore } from  "vuex";
  * 接口区
  */
 interface contentAnnouncementInterface{
-  time: string[],
+  time: any,
   title: string,
   content: any[],
   loading: boolean
@@ -342,7 +342,7 @@ const mainLoading = ref<boolean>(true);
 const current = ref<number>(0);
 const isAnnouncement = ref<boolean>(false);
 let contentAnnouncement = reactive<contentAnnouncementInterface>({
-  time: [],
+  time: null,
   title: '',
   content: [],
   loading: false
@@ -473,7 +473,7 @@ const contentAdd = () => {
   });
 }
 const announcementReset = () => {
-  contentAnnouncement.time = [];
+  contentAnnouncement.time = null;
   contentAnnouncement.title = '';
   contentAnnouncement.content = [];
 }
@@ -484,6 +484,14 @@ const announcementRestore = () => {
 }
 const announcementSave = () => {
   contentAnnouncement.loading = true;
+  if (contentAnnouncement.time === null){
+    ElMessage({
+      message: store.state['language']===1?'The start time and end time cannot be empty':'起止时间不能为空',
+      type: 'warning',
+    });
+    contentAnnouncement.loading = false;
+    return;
+  }
   for(let i in contentAnnouncement.content){
     if (contentAnnouncement.content[i]['type']===1 && contentAnnouncement.content[i]['pictureType']===0 && contentAnnouncement.content[i]['file']===null){
       ElMessage({
@@ -572,8 +580,8 @@ const announcement = () => {
       res1.data['content'].forEach((item:any)=>{
         content.push(JSON.parse(item));
       });
-      store.commit('modifyAnnouncement',{is:true,title:res1.data['title'],time:res1.data['time'],content:content});
-      isAnnouncement.value = true;
+      store.commit('modifyAnnouncement',{is:res1.data['open'],title:res1.data['title'],time:res1.data['time'],content:content});
+      isAnnouncement.value = res1.data['open'];
       announcementRestore();
     }
   });

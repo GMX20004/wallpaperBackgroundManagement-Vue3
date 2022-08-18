@@ -8,7 +8,7 @@ export default createStore({
     announcement:{// 系统公告
       is: false,
       title: '',
-      time: [],
+      time: null,
       content:[]
     }
   },
