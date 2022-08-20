@@ -810,6 +810,7 @@ onActivated(()=>{
   }
   ::v-deep .el-button{
     background-color: #7a7a7a;
+    color: white;
   }
   .administratorColor{
     background-color: #7a7a7a;

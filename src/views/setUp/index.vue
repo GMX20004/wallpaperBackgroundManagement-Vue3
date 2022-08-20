@@ -5,7 +5,7 @@
       <el-button style="width: 100px;margin-left: 50px" type="danger" round @click="exitClick">{{store.state['language']===1?'Exit':'退出'}}</el-button>
     </el-scrollbar>
     <el-dialog v-model="log.dialogVisible" v-loading="log.loading" :title="store.state['language']===1?'Log':'日志'" width="1000px">
-      <el-table :data="log.tableData" stripe style="width: 100%;" height="300px">
+      <el-table :data="log.tableData" style="width: 100%;" height="300px">
         <el-table-column prop="userId" label="用户编号" align="center" width="100" />
         <el-table-column prop="action" label="操作" align="center" />
         <el-table-column prop="operatingTime" label="时间"  align="center"/>
@@ -138,6 +138,13 @@ const logExport = () => {
   }
   ::v-deep .number{
     background-color: #7a7a7a;
+  }
+  ::v-deep .el-table--enable-row-transition{
+    background-color: #7a7a7a;
+  }
+  ::v-deep .el-table .el-table__cell.is-center{
+    background-color: #7a7a7a;
+    color: white;
   }
 }
 </style>

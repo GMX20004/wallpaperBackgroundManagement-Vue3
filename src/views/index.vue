@@ -1,7 +1,7 @@
 <template>
   <div v-if="isPc" class="background" :style="{height:height,width:width}" :class="dialogClass?'main-dialog':''">
     <video class="background-video" :style="{height:height,width:width}" autoplay loop muted>
-      <source src="https://assets.codepen.io/3364143/7btrrd.mp4" type="video/mp4">
+      <source :src="$imgUrl+'video/btrrd.mp4'" type="video/mp4">
       Your browser does not support the video tag.
     </video>
     <div v-if="!store.state['displayMode']" style="position: absolute;top: 0;background-color: #fff;opacity:0.6;" :style="{height:height,width:width}"></div>
@@ -305,6 +305,7 @@ const uuidCheck = () => {
   timing.value = setInterval(()=>{
     if ($cookies.get('uuid')===null){
       isLogTo.value = 0;
+      dialogClass.value = true;
       clearInterval(timing.value);
     }
   },8000);
@@ -478,4 +479,5 @@ window.onresize = function(){
 .color-white{
   background-color: white;
 }
+
 </style>

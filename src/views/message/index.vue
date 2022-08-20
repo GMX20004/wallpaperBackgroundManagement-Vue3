@@ -927,5 +927,8 @@ onMounted(()=>{
       }
     }
   }
+  ::v-deep .el-drawer{
+    background-color: #7a7a7a;
+  }
 }
 </style>

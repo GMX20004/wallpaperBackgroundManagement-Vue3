@@ -386,11 +386,13 @@ const batchUpload = reactive<uploadInterface>({
     picture.loading = false;
   }
   const wallpaperCanvas = (el:any,item:any) => {
+    el.style.pointerEvents = 'none';
     let ctx = el.getContext('2d');
     let cimg = new Image();
     cimg.src = $imgUrl+item['storageLocation']+'/'+item['id']+'.'+item['type'];
     cimg.onload=function () {
       ctx.drawImage(cimg,0,0,240,400);
+      el.style.pointerEvents = 'auto';
     }
     wallpaperRef['ref'+item['id']] = cimg;
   }
