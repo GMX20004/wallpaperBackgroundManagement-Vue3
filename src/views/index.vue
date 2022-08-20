@@ -1,5 +1,22 @@
 <template>
   <div v-if="isPc" class="background" :style="{height:height,width:width}" :class="dialogClass?'main-dialog':''">
+    <div v-if="isLogTo===-1" class="intro" :style="{height:height,width:width}">
+      <svg viewBox="0 0 800 600">
+        <symbol id="s-text">
+          <text text-anchor="middle" x="50%" y="68%" class="text--line2">GXM</text>
+        </symbol>
+        <g class="g-ants">
+          <use xlink:href="#s-text" class="text-copy"></use>
+          <use xlink:href="#s-text" class="text-copy"></use>
+          <use xlink:href="#s-text" class="text-copy"></use>
+          <use xlink:href="#s-text" class="text-copy"></use>
+          <use xlink:href="#s-text" class="text-copy"></use>
+        </g>
+      </svg>
+      <div style="position: absolute" :style="{'top':'calc('+height+' - 100px)',width:width}">
+        <el-divider id="progressCom" style="width: 1%;" />
+      </div>
+    </div>
     <video class="background-video" :style="{height:height,width:width}" autoplay loop muted>
       <source :src="$imgUrl+'video/btrrd.mp4'" type="video/mp4">
       Your browser does not support the video tag.
@@ -156,7 +173,7 @@ let width = ref<string>(window.innerWidth<1330?'1330px':'100%')
 let height = ref<string>(window.innerHeight<700?'700px':'100%');
 const store = useStore();
 const isPc = ref<boolean>(true);
-const isLogTo = ref<number>(-1);
+const isLogTo = ref<number>(-2);
 const ruleFormRef = ref<FormInstance>();
 const logIn = reactive<logInInterface>({
   account: '',
@@ -179,6 +196,8 @@ const rules  = reactive<FormRules>({
   password:{  validator: validatePass, trigger: 'blur'}
 });
 const timing = ref<any>();
+const progressTime = ref<any>();
+const progressNum = ref<number>(0);
 const isAnnouncement = ref<boolean>(false);
 const dialogClass = ref<boolean>(false);
 const color1 = ref<string>('#ffffff');
@@ -329,6 +348,25 @@ const displayMode = () => {
   color2.value = temp;
   color3.value = store.state.displayMode?'color-white':'color-black';
 }
+const progress = () => {
+  if($cookies.get('loading')===null){
+    isLogTo.value = -1;
+    $cookies.set('loading','0',{ expires: -1 });
+    progressTime.value = setInterval(()=>{
+      progressNum.value++;
+      let html = document.getElementById('progressCom');
+      if (html !== null){
+        html.style.width = progressNum.value + '%';
+      }
+      if (progressNum.value===100){
+        clearInterval(progressTime.value);
+        isLogTo.value = 0;
+      }
+    },100);
+  }else{
+    isLogTo.value = 0;
+  }
+}
 watch(isAnnouncement,(newValue)=>{
   if (!newValue){
     setTimeout(() => {
@@ -345,7 +383,7 @@ onMounted(()=>{
     gainPermissions();
   }else{
     announcement();
-    isLogTo.value = 0;
+    progress();
   }
   yzmQuery();
 })
@@ -379,6 +417,41 @@ window.onresize = function(){
 .background{
   overflow: auto;
   display: flex;
+  user-select: none;
+  .intro{
+    position: absolute;
+    background-color: black;
+    z-index: 99;
+    $colors: #360745, #D61C59, #E7D84B, #EFEAC5, #1B8798;
+    svg {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+    $max: 5;
+    $stroke-step: 7%;
+    .text-copy {
+      font-size: 300px;
+      fill: none;
+      stroke: white;
+      stroke-dasharray: $stroke-step $stroke-step * ($max - 1);
+      stroke-width: 3px;
+      animation: stroke-offset 9s infinite linear;
+      @for $item from 1 through $max {
+        $stroke-color: nth($colors, $item);
+        &:nth-child(#{$item}) {
+          stroke: $stroke-color;
+          stroke-dashoffset: $stroke-step * $item;
+        }
+      }
+    }
+    @keyframes stroke-offset {
+      50% {
+        stroke-dashoffset: $stroke-step * $max;
+        stroke-dasharray: 0 $stroke-step * $max*2.5;
+      }
+    }
+  }
   .background-video{
     object-fit: fill;
     position: absolute;
