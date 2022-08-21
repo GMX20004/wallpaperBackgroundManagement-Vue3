@@ -264,6 +264,7 @@ const submit = (formEl: FormInstance | undefined) => {
               type: 'success',
             });
             $cookies.set('uuid',res.data['uuid'],{ expires: -1 });
+            store.commit('modifyUUID',{val:res.data['uuid']});
             userInformationQuery();
           }else{
             ElMessage.error(store.state.language===1?'Account or password is incorrect':'帐号或密码错误')
@@ -277,6 +278,7 @@ const submit = (formEl: FormInstance | undefined) => {
 }
 const visitorsLogin = () =>{
   $cookies.set('uuid','000000',{ expires: -1 });
+  store.commit('modifyUUID',{val:'000000'});
   userInformationQuery();
 }
 const userInformationQuery = () => {
@@ -314,6 +316,7 @@ const userInformationQuery = () => {
     isLogTo.value = 0;
     dialogClass.value = true;
     clearInterval(timing.value);
+    ElMessage.error(store.state.language===1?'The UUID is invalid. Log in to the system again':'UUID无效。请重新登录系统');
   });
 }
 const gainPermissions = () => {
@@ -331,6 +334,14 @@ const uuidCheck = () => {
       isLogTo.value = 0;
       dialogClass.value = true;
       clearInterval(timing.value);
+      ElMessage.error(store.state.language===1?'The account is invalid and log in again':'帐号无效，请重新登录');
+    }else{
+      if ($cookies.get('uuid') !== store.state.uuid){
+        isLogTo.value = 0;
+        dialogClass.value = true;
+        clearInterval(timing.value);
+        ElMessage.error(store.state.language===1?'The UUID is invalid. Log in to the system again':'UUID无效。请重新登录系统');
+      }
     }
   },8000);
 }

@@ -2,6 +2,7 @@ import { createStore } from 'vuex';
 
 export default createStore({
   state: {
+    uuid: '',
     displayMode: false,
     nightColor: '#7a7a7a',
     language: 1,// 语言
@@ -16,6 +17,9 @@ export default createStore({
   },
   getters: {},
   mutations: {
+    modifyUUID(state,{ val }){
+      state.uuid = val;
+    },
     modifyDisplayMode(state,{ val }){
       state.displayMode = val;
     },
