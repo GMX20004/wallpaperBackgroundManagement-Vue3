@@ -513,9 +513,11 @@ const batchUpload = reactive<uploadInterface>({
   }
   const  upload = async ()=>{
     batchUpload.isUpload = true;
+    let is = true;
     while (batchUpload.fileList.length!==0){
       batchUpload.percentage = 0;
       let fileFormData = new FormData();
+      fileFormData.append("uuid", $cookies.get('uuid'));
       fileFormData.append("userId", store.state['userInformation']['id']);
       fileFormData.append("file", batchUpload.fileList[0]['raw']);
       fileFormData.append('size', batchUpload.fileList[0]['size']);
@@ -532,12 +534,19 @@ const batchUpload = reactive<uploadInterface>({
               notOnline.wallpaperList.push([res.data['data']]);
             }
           }
+        }else{
+          ElMessage.error(store.state['language']===1?'Upload failed':'上传失败');
+          batchUpload.isUpload = false;
+          is = false;
         }
       }).catch(()=>{
         ElMessage.error(store.state['language']===1?'Upload failed':'上传失败');
         batchUpload.isUpload = false;
-        return;
+        is = false;
       })
+      if (!is){
+        return;
+      }
       batchUpload.fileList.splice(0,1);
     }
     batchUpload.isUpload = false;

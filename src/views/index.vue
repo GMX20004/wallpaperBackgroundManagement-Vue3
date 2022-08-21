@@ -309,6 +309,11 @@ const userInformationQuery = () => {
       }
     }
     if (store.state.announcement.is) isAnnouncement.value = true;
+  }).catch(()=>{
+    $cookies.remove('uuid');
+    isLogTo.value = 0;
+    dialogClass.value = true;
+    clearInterval(timing.value);
   });
 }
 const gainPermissions = () => {

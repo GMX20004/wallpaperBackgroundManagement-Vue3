@@ -80,6 +80,7 @@ const logQuery = () => {
   log.loading = true;
   $http.get('/admin/OperationLog',{
     params:{
+      uuid: $cookies.get('uuid'),
       page: log.page,
       limit:10
     }
