@@ -264,7 +264,6 @@ const submit = (formEl: FormInstance | undefined) => {
               type: 'success',
             });
             $cookies.set('uuid',res.data['uuid'],{ expires: -1 });
-            store.commit('modifyUUID',{val:res.data['uuid']});
             userInformationQuery();
           }else{
             ElMessage.error(store.state.language===1?'Account or password is incorrect':'帐号或密码错误')
@@ -278,7 +277,6 @@ const submit = (formEl: FormInstance | undefined) => {
 }
 const visitorsLogin = () =>{
   $cookies.set('uuid','000000',{ expires: -1 });
-  store.commit('modifyUUID',{val:'000000'});
   userInformationQuery();
 }
 const userInformationQuery = () => {
@@ -288,6 +286,7 @@ const userInformationQuery = () => {
   }).then((data:any)=>{
     store.commit('modifyUserInformation',{val:data.data[0]});
     store.commit('modifyLanguage',{val:data.data[0]['language']});
+    store.commit('modifyUUID',{val:data.data[0]['userId']});
     gainPermissions();
     isLogTo.value = 1;
     if (window.location.pathname == '/'){
