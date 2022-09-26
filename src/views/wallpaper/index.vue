@@ -187,10 +187,7 @@ interface uploadInterface{
  */
 // 公共
 const proxy = inject("proxy");
-const { $imgUrl } = proxy as any;
-const { $http } = proxy as any;
-const { $cookies } = proxy as any;
-const { $file } = proxy as any;
+const { $mobileUrl,$http,$cookies,$file } = proxy as any;
 const store = useStore();
 let Select = ref<number>(0);
 const dialog = ref<boolean>(false);
@@ -389,7 +386,7 @@ const batchUpload = reactive<uploadInterface>({
     el.style.pointerEvents = 'none';
     let ctx = el.getContext('2d');
     let cimg = new Image();
-    cimg.src = $imgUrl+item['storageLocation']+'/'+item['id']+'.'+item['type'];
+    cimg.src = $mobileUrl+item['storageLocation']+'/'+item['id']+'.'+item['type'];
     cimg.onload=function () {
       ctx.drawImage(cimg,0,0,240,400);
       el.style.pointerEvents = 'auto';

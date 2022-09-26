@@ -327,11 +327,9 @@ interface importantParameterInterface{
  */
 // 公共变量
 const proxy = inject("proxy");
-const { $imgUrl } = proxy as any;
-const { $http } = proxy as any;
-const { $cookies } = proxy as any;
+const { $userUrl,$http,$cookies } = proxy as any;
 const store = useStore();
-const headPortrait = $imgUrl+'/headPortrait/';
+const headPortrait = $userUrl+'/headPortrait/';
 const messageType = ref<number>(1);
 const alignOptions = [{English:'left',Chinese:'左',value: 0},{English:'right',Chinese:'右',value: 1},{English:'center',Chinese:'居中',value: 2}];
 const jumpWay = [{English:'Current Page Display',Chinese:'当前页面显示',value: '_self'},{English:'New page display',Chinese:'新页面显示',value: '_blank'},{English:'Corresponding window display',Chinese:'相应的窗口显示',value: 'three'}];

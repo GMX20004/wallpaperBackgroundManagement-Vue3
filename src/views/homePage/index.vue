@@ -155,13 +155,10 @@ import { useStore } from  "vuex";
  * 变量区
  */
 const proxy = inject("proxy");
-const { $imgUrl } = proxy as any;
-const { $http } = proxy as any;
-const { $echarts } = proxy as any;
-const { $cookies } = proxy as any;
+const { $userUrl,$http,$echarts,$cookies } = proxy as any;
 const store = useStore();
 let search = ref('');
-const headPortrait = $imgUrl+'/headPortrait/';
+const headPortrait = $userUrl+'/headPortrait/';
 const date = new Date();
 const time = ref<any>([]);
 const mainLoading = ref<boolean>(false);

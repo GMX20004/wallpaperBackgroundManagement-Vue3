@@ -18,7 +18,7 @@
       </div>
     </div>
     <video class="background-video" :style="{height:height,width:width}" autoplay loop muted>
-      <source :src="$imgUrl+'video/btrrd.mp4'" type="video/mp4">
+      <source :src="$otherUrl+'video/btrrd.mp4'" type="video/mp4">
       Your browser does not support the video tag.
     </video>
     <div v-if="!store.state['displayMode']" style="position: absolute;top: 0;background-color: #fff;opacity:0.6;" :style="{height:height,width:width}"></div>
@@ -69,7 +69,7 @@
         </div>
       </span>
     </div>
-    <div v-else-if="isLogTo===0" class="system" :style="{'background-image': 'url('+$imgUrl+'system/LoginInterface.jpg'+')'}">
+    <div v-else-if="isLogTo===0" class="system" :style="{'background-image': 'url('+$otherUrl+'system/LoginInterface.jpg'+')'}">
     <span class="logTo-background">
     </span>
       <span class="logTo-interface">
@@ -164,9 +164,7 @@ interface logInInterface{
  * 变量区
  */
 const proxy = inject("proxy");
-const { $http } = proxy as any;
-const { $cookies } = proxy as any;
-const { $imgUrl } = proxy as any;
+const { $http,$cookies,$otherUrl } = proxy as any;
 const router = useRouter();
 let options = ref(0);
 let width = ref<string>(window.innerWidth<1330?'1330px':'100%')

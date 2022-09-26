@@ -120,12 +120,10 @@ interface modifyInterfacer{
  * 变量区
  */
 const proxy = inject("proxy");
-const { $imgUrl } = proxy as any;
-const { $http } = proxy as any;
-const { $cookies } = proxy as any;
+const { $userUrl,$http,$cookies } = proxy as any;
 const store = useStore();
 const mainLoading = ref<boolean>(false);
-const headPortrait = $imgUrl+'/headPortrait/';
+const headPortrait = $userUrl+'/headPortrait/';
 const userIsFocus = ref<number>(0);
 const userListLoading = ref<boolean>(false);
 const userList = ref<any>([]);
