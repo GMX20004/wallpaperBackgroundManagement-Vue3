@@ -49,7 +49,7 @@ const { $cookies } = proxy as any;
 const { $http } = proxy as any;
 const { $file } = proxy as any;
 const store = useStore();
-const modifyIsLogTo:any = inject('modifyIsLogTo');
+const modifyIsLogTo:any = inject('modifyFramework');
 const modifyDialogClass:any = inject('modifyDialogClass');
 // 日志
 const log = reactive<logInterface>({

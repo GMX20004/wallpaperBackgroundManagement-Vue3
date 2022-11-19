@@ -8,13 +8,9 @@
     <div class="body-hierarchy2">
       <div v-show="Select===0" class="Project1">
         <div  style="height: 100%;overflow: auto">
-          <el-scrollbar class="Project1-container">
+          <el-scrollbar class="Project1-container" >
             <ul v-infinite-scroll="onlineLoad" :infinite-scroll-disabled="online.disabled">
-              <li v-for="(item,i) in online.wallpaperList" :key="i" class="wallpaper-line">
-                <span v-for="(item1,p) in item" :key="p">
-                  <canvas style="cursor: pointer;width: 120px;height: 200px;" width="240" height="400" :ref="(el)=>wallpaperCanvas(el,item1)" @click="onlineImage(item1['id'])"/>
-              </span>
-              </li>
+              <canvas v-for="(item,i) in online.wallpaperList" :key="i" style="cursor: pointer;width: 120px;height: 200px;" width="240" height="400" :ref="(el)=>wallpaperCanvas(el,item)" @click="onlineImage(item['id'],i)"/>
             </ul>
             <p v-if="online.loading">Loading...</p>
             <p v-if="online.disabled">No more</p>
@@ -25,11 +21,7 @@
         <div  style="height: 100%;overflow: auto">
           <el-scrollbar class="Project1-container">
             <ul v-infinite-scroll="notOnlineLoad" :infinite-scroll-disabled="notOnline.disabled">
-              <li v-for="(item,i) in notOnline.wallpaperList" :key="i" class="wallpaper-line">
-                <span v-for="(item1,p) in item" :key="p">
-                  <canvas style="cursor: pointer;width: 120px;height: 200px;" width="240" height="400" :ref="(el)=>wallpaperCanvas(el,item1)" @click="onlineImage(item1['id'])"/>
-                </span>
-              </li>
+              <canvas v-for="(item,i) in notOnline.wallpaperList" :key="i" style="cursor: pointer;width: 120px;height: 200px;" width="240" height="400" :ref="(el)=>wallpaperCanvas(el,item)" @click="onlineImage(item['id'],i)"/>
             </ul>
             <p v-if="notOnline.loading">Loading...</p>
             <p v-if="notOnline.disabled">No more</p>
@@ -164,7 +156,8 @@ interface ruleFormInterface{
   label: string[],
   state: number,
   type: string,
-  storageLocation: string
+  storageLocation: string,
+  index:number
 }
 interface wallpaperInterface{
   selected:number,
@@ -204,6 +197,7 @@ const ruleForm = reactive<ruleFormInterface>({
   state: 0,
   type: '',
   storageLocation: '',
+  index: -1
 });
 const rules  = reactive<FormRules>({
   title:{ required: true, message: 'Please input Activity name', trigger: 'blur' },
@@ -231,7 +225,7 @@ const online = reactive<wallpaperInterface>({
   loading:false,
   form:{
     page:1,
-    limit:18
+    limit:24
   }
 });
 // 未上线
@@ -244,7 +238,7 @@ const notOnline = reactive<wallpaperInterface>({
   loading:false,
   form:{
     page:1,
-    limit:18,
+    limit:24,
     uuid:$cookies.get('uuid')
   }
 });
@@ -334,13 +328,14 @@ const batchUpload = reactive<uploadInterface>({
     ruleForm.storageLocation = storageLocation;
     dialog.value = false;
   }
-  const onlineImage = (id:any) =>{
+  const onlineImage = (id:any,index:number) =>{
     dialog.value = true;
     picture.loading = true;
     if (picture.id === id && ruleForm.id === id){
       picture.loading = false;
     }else{
       picture.id = id;
+      ruleForm.index = index;
       $http.post('/Wallpaper/wallpaper?'+Qs.stringify({
         id:id
       })).then((res:any)=>{
@@ -424,7 +419,6 @@ const batchUpload = reactive<uploadInterface>({
     if (online.isReturn){
       online.isReturn = false;
       setTimeout(() => {
-        online.form.page++;
         onlineWallpaperQuery();
       }, 1000);
     }
@@ -433,21 +427,12 @@ const batchUpload = reactive<uploadInterface>({
     $http.get('/Wallpaper/daily',{
       params: online.form
     }).then((res:any)=>{
-      let temporary = [];
       if (res.data['data'].length<online.form['limit'])online.disabled = true;
       online.loading = false;
-      for (let i=0;i<res.data['data'].length;i++){
-        temporary.push(res.data['data'][i]);
-        if ((i+1)%6==0){
-          online.wallpaperList.push(temporary);
-          temporary = [];
-        }
-      }
-      if (temporary.length !== 0){
-        online.wallpaperList.push(temporary);
-      }
+      online.wallpaperList.push(...res.data.data);
       online.total = res.data['total'];
       online.isReturn = true;
+      online.form.page++;
     });
   }
 
@@ -457,7 +442,6 @@ const batchUpload = reactive<uploadInterface>({
     if (notOnline.isReturn){
       notOnline.isReturn = false;
       setTimeout(() => {
-        notOnline.form.page++;
         notOnlineWallpaperQuery();
       }, 1000);
     }
@@ -466,20 +450,11 @@ const batchUpload = reactive<uploadInterface>({
     $http.get('/admin/0529588ecb8d4246bc0dc5302643b62d',{
       params: notOnline.form
     }).then((res:any)=>{
-      let temporary = [];
       if (res.data['data'].length<notOnline.form['limit'])notOnline.disabled = true;
       notOnline.loading = false;
-      for (let i=0;i<res.data['data'].length;i++){
-        temporary.push(res.data['data'][i]);
-        if ((i+1)%6==0){
-          notOnline.wallpaperList.push(temporary);
-          temporary = [];
-        }
-      }
-      if (temporary.length !== 0){
-        notOnline.wallpaperList.push(temporary);
-      }
+      notOnline.wallpaperList.push(...res.data.data);
       notOnline.total = res.data['total'];
+      notOnline.form.page++;
       notOnline.isReturn = true;
     });
   }
@@ -525,11 +500,7 @@ const batchUpload = reactive<uploadInterface>({
       }).then((res:any)=>{
         if (res.data['state']){
           if (notOnline.disabled){
-            if(notOnline.wallpaperList[notOnline.wallpaperList.length-1].length<6){
-              notOnline.wallpaperList[notOnline.wallpaperList.length-1].push(res.data['data']);
-            }else{
-              notOnline.wallpaperList.push([res.data['data']]);
-            }
+            notOnline.wallpaperList.push(res.data['data']);
           }
         }else{
           ElMessage.error(store.state['language']===1?'Upload failed':'上传失败');
@@ -574,19 +545,20 @@ const batchUpload = reactive<uploadInterface>({
     border: 1px solid #cccfd4;
     border-radius: 20px;
     .Project1{
-      width: 96%;
+      width: 97%;
       height: 100%;
-      margin-left: 2%;
+      margin-left: 1.5%;
       .Project1-container{
         height: 100%;
         width: 100%;
         overflow-y: auto;
         ul{
-          li{
-            span:first-child{
-              margin: 0;
-            }
-          }
+          display: grid;
+          grid-template-columns: repeat(auto-fill,120px);
+          justify-content: space-evenly;
+          grid-gap: 10px;
+          margin-left: 0;
+          padding-left: 0;
         }
       }
       p{
